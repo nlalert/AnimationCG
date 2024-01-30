@@ -39,36 +39,33 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
     
     int tranparentcy = 255;
-    double squareRotate = 0;
-    double circleMove = 0;
-    double squareMove = 500;
+    double letter1 = 0;
+    double letter2 = 0;
+    String line1 = "What?";
+    String line2 = "Baby Chicken is evolving!";
 
     //start animation
     @Override
     public void run() {
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
-        double circleVelocity = 100;
-        double squareVelocity = -100;
+        double letterVelocity = 12;
         
         startTime = lastTime;
-
-        while (true)
-        {
+        while (true) {
             currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - lastTime;
             lastTime = currentTime;
             
             double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in second unit
-            if(timer <= 3){
 
+            if(timer <= 5/letterVelocity){//first text line
+                letter1 += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer <= 6){
-
+            else if(timer <= 30/letterVelocity){//second text line
+                letter2 += letterVelocity * elapsedTime / 1000.0;
             }
         
-
-
             //Display
             repaint();
         }
@@ -82,30 +79,28 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawText(g2);
         drawEffect(g2);
         drawBaby(g2);
-        // g2.setColor(Color.BLACK);
-        // g2.translate(circleMove, 0);
-        // g2.drawOval(0, 0, 100, 100);
-        // //rotate square
-        // g2.translate(-circleMove, 0);
-        // g2.rotate(squareRotate, 300, 300);
-        // g2.drawRect(200, 200, 200, 200);
-
-        // //move square
-        // g2.rotate(-squareRotate, 300, 300);
-        // g2.translate(0, squareMove);
-        // g2.drawRect(0, 0, 100, 100);
     }
    
     private void drawText(Graphics2D g) {
+        String text1 = "";
+        String text2 = "";
+        for (int i = 0; i < letter1 && i < line1.length(); i++) {
+            text1 += line1.charAt(i);
+        }
+        for (int i = 0; i < letter2 && i < line2.length(); i++) {
+            text2 += line2.charAt(i);
+        }
         g.setFont(font);
 
+        //draw text Shadow
         g.setColor(new Color(86, 73, 84));
-        g.drawString("What?", 38, 514);
-        g.drawString("Baby Chicken is evolving!", 38, 564);
+        g.drawString(text1, 38, 514);
+        g.drawString(text2, 38, 564);
 
+        //draw text Real
         g.setColor(new Color(200, 194, 205));
-        g.drawString("What?", 35, 510);
-        g.drawString("Baby Chicken is evolving!", 35, 560);
+        g.drawString(text1, 35, 510);
+        g.drawString(text2, 35, 560);
     }
 
     private void drawBackground(Graphics2D g) {
