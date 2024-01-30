@@ -20,6 +20,7 @@ public class Animation extends JPanel implements Runnable{
         (new Thread(m)).start();
     }
     
+    int tranparentcy = 255;
     double squareRotate = 0;
     double circleMove = 0;
     double squareMove = 500;
@@ -82,19 +83,62 @@ public class Animation extends JPanel implements Runnable{
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(Color.WHITE);
-        g2.fillRect(0, 0, 600, 600);
-        g2.setColor(Color.BLACK);
-        g2.translate(circleMove, 0);
-        g2.drawOval(0, 0, 100, 100);
-        //rotate square
-        g2.translate(-circleMove, 0);
-        g2.rotate(squareRotate, 300, 300);
-        g2.drawRect(200, 200, 200, 200);
-
-        //move square
-        g2.rotate(-squareRotate, 300, 300);
-        g2.translate(0, squareMove);
-        g2.drawRect(0, 0, 100, 100);
+        drawBackground(g2);
+        drawTextbox(g2);
+        drawEffect(g2);
+        drawBaby(g2);
     }
+   
+    private void drawBackground(Graphics g) {
+
+        g.setColor(new Color(0,0,0));
+        g.fillRect(0, 0, 600, 600);
+
+        g.setColor(new Color(242,254,236,tranparentcy));
+        g.fillRect(0, 0, 600, 600);
+
+        for (int i = 0; i < 40; i++) {
+
+            if (i == 0)       
+                g.setColor(new Color(183,222,241,tranparentcy));
+
+            else if (i == 1)
+                g.setColor(new Color(195,232,228,tranparentcy));
+
+            else if (i == 2)
+                g.setColor(new Color(209,241,222,tranparentcy));
+
+            else if (i == 3)
+                g.setColor(new Color(221,249,215,tranparentcy));
+
+            else
+                g.setColor(new Color(237,255,212,tranparentcy));
+
+            g.fillRect(0, i*15, 600, 12);
+
+        }
+
+    }
+    
+    private void drawTextbox(Graphics g) {
+
+        g.setColor(new Color(62,57,70));
+        g.fillRect(0, 450, 600, 150);
+
+        g.setColor(new Color(150,58,54));
+        g.fillRoundRect(10, 455, 580, 140, 10, 10);
+
+        g.setColor(new Color(104,138,134));
+        g.fillRoundRect(20, 460, 560, 130, 10, 10);
+
+    }
+    
+    private void drawEffect(Graphics g) {
+        
+    }
+
+    private void drawBaby(Graphics g) {
+        
+    }
+    
 }
