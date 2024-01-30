@@ -20,55 +20,16 @@ public class Animation extends JPanel implements Runnable{
         (new Thread(m)).start();
     }
     
-    int tranparentcy = 255;
+    int tranparency = 255;
     double squareRotate = 0;
     double circleMove = 0;
     double squareMove = 500;
 
     //start animation
     @Override
-    public void run() {
-        double lastTime = System.currentTimeMillis();
-        double currentTime, elapsedTime, startTime;
-        double circleVelocity = 100;
-        double squareVelocity = -100;
-        
-        startTime = lastTime;
+    public void run() {       
         while (true)
         {
-            currentTime = System.currentTimeMillis();
-            elapsedTime = currentTime - lastTime;
-            lastTime = currentTime;
-            
-            updateText();
-
-            //move circle
-            circleMove += circleVelocity * elapsedTime / 1000.0;
-            //rotate square
-            squareRotate += 0.5 * elapsedTime / 1000.0;
-            //move square
-            if((currentTime-startTime)/1000.0 >= 3)
-                squareMove += squareVelocity * elapsedTime / 1000.0;
-
-            //check cirlce
-            if(circleMove >= 500){
-                circleMove = 500;
-                circleVelocity = -circleVelocity;
-            }
-            else if(circleMove <= 0){
-                circleMove = 0;
-                circleVelocity = -circleVelocity;
-            }
-
-            //check square
-            if(squareMove >= 500){
-                squareMove = 500;
-                squareVelocity = -squareVelocity;
-            }
-            else if(squareMove <= 0){
-                squareMove = 0;
-                squareVelocity = -squareVelocity;
-            }
 
             //Display
             repaint();
@@ -91,32 +52,32 @@ public class Animation extends JPanel implements Runnable{
    
     private void drawBackground(Graphics g) {
 
-        g.setColor(new Color(0,0,0));
-        g.fillRect(0, 0, 600, 600);
-
-        g.setColor(new Color(242,254,236,tranparentcy));
+        g.setColor(new Color(242,254,236));
         g.fillRect(0, 0, 600, 600);
 
         for (int i = 0; i < 40; i++) {
 
             if (i == 0)       
-                g.setColor(new Color(183,222,241,tranparentcy));
+                g.setColor(new Color(183,222,241));
 
             else if (i == 1)
-                g.setColor(new Color(195,232,228,tranparentcy));
+                g.setColor(new Color(195,232,228));
 
             else if (i == 2)
-                g.setColor(new Color(209,241,222,tranparentcy));
+                g.setColor(new Color(209,241,222));
 
             else if (i == 3)
-                g.setColor(new Color(221,249,215,tranparentcy));
+                g.setColor(new Color(221,249,215));
 
             else
-                g.setColor(new Color(237,255,212,tranparentcy));
+                g.setColor(new Color(237,255,212));
 
             g.fillRect(0, i*15, 600, 12);
 
         }
+
+        g.setColor(new Color(0,0,0, 0));
+        g.fillRect(0, 0, 600, 600);
 
     }
     
@@ -139,6 +100,39 @@ public class Animation extends JPanel implements Runnable{
 
     private void drawBaby(Graphics g) {
         
+    }
+
+    private void midpointCircle(Graphics g, int xc, int yc, int r) {
+        int x = 0;
+        int y = r;
+        int dx = 2*x;
+        int dy = 2*y;
+        int d = 1-r;
+        while (x <= y) {
+            plot(g, x+xc, y+yc);
+            plot(g, -x+xc, y+yc);
+            plot(g, x+xc, -y+yc);
+            plot(g, -x+xc, -y+yc);
+
+            plot(g, y+xc, x+yc);
+            plot(g, -y+xc, x+yc);
+            plot(g, y+xc, -x+yc);
+            plot(g, -y+xc, -x+yc);
+
+            x++;
+            dx += 2;
+            d += dx + 1;
+
+            if (d >= 0) {
+                y--;
+                dy -= 2;
+                d -= dy;
+            }
+        }
+    }
+
+    private void plot(Graphics g, int x, int y) {
+        g.fillRect(x, y, 1, 1);
     }
     
 }
