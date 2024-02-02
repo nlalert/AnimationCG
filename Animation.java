@@ -50,11 +50,14 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     String line2 = "Baby Chicken is evolving!";
     
     double tranparency = 0;
-    
-    double[][] pillarSize = new double[10][4];
-    double[][] pillarPositionX = new double[10][4];
-    double[][] pillarPositionY = new double[10][4];
-    char[][] pillarDirection = new char[10][4];
+
+
+    int pillarLayers = 10;
+    int pillarBalls = 4;
+    double[][] pillarSize = new double[pillarLayers][pillarBalls];
+    double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
+    double[][] pillarPositionY = new double[pillarLayers][pillarBalls];
+    char[][] pillarDirection = new char[pillarLayers][pillarBalls];
 
     //start animation
     @Override
@@ -105,13 +108,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
             if(timer >= 4 && timer < 5 && tranparency < 255){   //dark screen transition at the 4th second  
                 transition += 300 * elapsedTime / 1000.0;
-                if((int)transition % 36 == 3)
+                if((int)transition % 36 == 3){
                     tranparency = transition;
+                }
             }
 
-            if(timer >= 5){   //dark screen transition at the 4th second  
-                int layer = 10;
-                
+            if(timer >= 5){   //dark screen transition at the 4th second              
                 int midpointX = 300;
                 int midpointY = 360;
                 
@@ -123,19 +125,23 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 double horizontalSpeed = 0.000075;
                 double verticalVelocity = 3;
 
-                if ((currentTime-startTime)*1000 % 1 == 0) {                  
-                    for (int i = 0; i < layer; i++) {  
+                if ((currentTime-startTime) * 1000 % 1 == 0) {
+
+                    for (int i = 0; i < pillarLayers; i++) {  
                                     
                         double heightRatio = ((midpointY - pillarPositionY[i][0]) / midpointY);
                         
                         double size = baseSize - heightRatio * baseSize;
+                        double currentVerlocity =  horizontalSpeed * heightRatio * verticalVelocity;
+
                         double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
                         double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
-                        double currentVerlocity =  horizontalSpeed * heightRatio * verticalVelocity;
-                        for (int j = 0; j < 4; j++) {
+
+                        for (int j = 0; j < pillarBalls; j++) {
 
                             pillarSize[i][j] = size;
-                            if (heightRatio > 0) {
+
+                            if (heightRatio > 0){
                                 pillarPositionY[i][j] -= veticalSpeed + currentVerlocity;
                             }
                             else{
@@ -144,22 +150,29 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
                             if(pillarPositionY[i][0] <= 360){ 
                
-                                if(pillarPositionX[i][j] <= leftBorder)
+                                if(pillarPositionX[i][j] <= leftBorder){
                                     pillarDirection[i][j] = 'R';
+                                }
     
-                                else if(pillarPositionX[i][j] >= rightBorder)
+                                else if(pillarPositionX[i][j] >= rightBorder){
                                     pillarDirection[i][j] = 'L';
+                                }
         
-                                if (pillarDirection[i][j] == 'L')
+                                if (pillarDirection[i][j] == 'L'){
                                     pillarPositionX[i][j] -= horizontalSpeed;
+                                }
     
-                                else if (pillarDirection[i][j] == 'R')
+                                else if (pillarDirection[i][j] == 'R'){
                                     pillarPositionX[i][j] += horizontalSpeed;
+                                }
                             }
 
                         }
+
                     }
+                    
                 }
+
             }
         
             //Display
@@ -258,15 +271,21 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         g.setColor(new Color(255,255,255));
 
-        for (int i = 0; i < 10; i++) {          
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < pillarLayers; i++) {   
+
+            for (int j = 0; j < pillarBalls; j++) {
+
                 if (pillarPositionY[i][0] < 360){
                     midpointCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
-                    if ((int)pillarSize[i][j] > 1) {            
+
+                    if ((int)pillarSize[i][j] > 1) {   
                         floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255));
                     }
+
                 }
+
             }
+
         }
     }
 
