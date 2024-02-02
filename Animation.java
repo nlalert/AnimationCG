@@ -4,9 +4,13 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -37,12 +41,20 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         f.setLocationRelativeTo(null);
         (new Thread(m)).start();
     }
-    
-    int tranparency = 255;
+
+    private static BufferedImage buffer;
+
     double letter1 = 0;
     double letter2 = 0;
     String line1 = "What?";
     String line2 = "Baby Chicken is evolving!";
+    
+    double tranparency = 0;
+    
+    double[][] pillarSize = new double[10][4];
+    double[][] pillarPositionX = new double[10][4];
+    double[][] pillarPositionY = new double[10][4];
+    char[][] pillarDirection = new char[10][4];
 
     //start animation
     @Override
@@ -50,9 +62,34 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
         double letterVelocity = 12;
+        double transition = 0;
+
+        for (double[] p : pillarPositionX) {
+            p[0] = 300;
+            p[1] = 300;
+            p[2] = 450;
+            p[3] = 150;
+        }
+
+        int layerGaps = 0;
+        for (double[] p : pillarPositionY) {
+            p[0] = 360+layerGaps;
+            p[1] = 340+layerGaps;
+            p[2] = 350+layerGaps;
+            p[3] = 350+layerGaps;
+            layerGaps += 3;
+        }
+
+        for (char[] d : pillarDirection) {
+            d[0] = 'L';
+            d[1] = 'R';
+            d[2] = 'L';
+            d[3] = 'R';
+        }
         
         startTime = lastTime;
         while (true) {
+
             currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - lastTime;
             lastTime = currentTime;
@@ -65,6 +102,65 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             else if(timer <= 30/letterVelocity){//second text line
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }
+
+            if(timer >= 4 && timer < 5 && tranparency < 255){   //dark screen transition at the 4th second  
+                transition += 300 * elapsedTime / 1000.0;
+                if((int)transition % 36 == 3)
+                    tranparency = transition;
+            }
+
+            if(timer >= 5){   //dark screen transition at the 4th second  
+                int layer = 10;
+                
+                int midpointX = 300;
+                int midpointY = 360;
+                
+                int baseSize = 10;
+                int baseLength = 300;
+                int finalLength = 100;
+
+                double veticalSpeed = 0.000005;
+                double horizontalSpeed = 0.000075;
+                double verticalVelocity = 3;
+
+                if ((currentTime-startTime)*1000 % 1 == 0) {                  
+                    for (int i = 0; i < layer; i++) {  
+                                    
+                        double heightRatio = ((midpointY - pillarPositionY[i][0]) / midpointY);
+                        
+                        double size = baseSize - heightRatio * baseSize;
+                        double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
+                        double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
+                        double currentVerlocity =  horizontalSpeed * heightRatio * verticalVelocity;
+                        for (int j = 0; j < 4; j++) {
+
+                            pillarSize[i][j] = size;
+                            if (heightRatio > 0) {
+                                pillarPositionY[i][j] -= veticalSpeed + currentVerlocity;
+                            }
+                            else{
+                                pillarPositionY[i][j] -= veticalSpeed;
+                            }
+
+                            if(pillarPositionY[i][0] <= 360){ 
+               
+                                if(pillarPositionX[i][j] <= leftBorder)
+                                    pillarDirection[i][j] = 'R';
+    
+                                else if(pillarPositionX[i][j] >= rightBorder)
+                                    pillarDirection[i][j] = 'L';
+        
+                                if (pillarDirection[i][j] == 'L')
+                                    pillarPositionX[i][j] -= horizontalSpeed;
+    
+                                else if (pillarDirection[i][j] == 'R')
+                                    pillarPositionX[i][j] += horizontalSpeed;
+                            }
+
+                        }
+                    }
+                }
+            }
         
             //Display
             repaint();
@@ -73,12 +169,20 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     @Override
     public void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        drawBackground(g2);
-        drawTextbox(g2);
-        drawText(g2);
-        drawEffect(g2);
-        drawBaby(g2);
+        super.paintComponent(g);
+        paintImage();
+        g.drawImage(buffer, 0, 0, this);
+    }
+    
+    //paint entire image on buffer
+    private void paintImage() {
+        buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = buffer.createGraphics();
+        drawBackground(g);
+        drawTextbox(g);
+        drawText(g);
+        drawEffect(g);
+        drawBaby(g);
     }
    
     private void drawText(Graphics2D g) {
@@ -105,10 +209,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBackground(Graphics2D g) {
         //clean screen
-        g.setColor(new Color(0,0,0));
-        g.fillRect(0, 0, 600, 600);
-
-        g.setColor(new Color(242,254,236,tranparency));
+        g.setColor(new Color(242,254,236));
         g.fillRect(0, 0, 600, 600);
 
         for (int i = 0; i < 40; i++) {
@@ -132,9 +233,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         }
 
-        g.setColor(new Color(0,0,0, 0));
+        g.setColor(new Color(0,0,0,(int)tranparency));
         g.fillRect(0, 0, 600, 600);
-
     }
     
     private void drawTextbox(Graphics2D g) {
@@ -151,7 +251,23 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
     
     private void drawEffect(Graphics2D g) {
-        
+        drawPillar(g);
+    }
+
+    private void drawPillar(Graphics2D g) {
+
+        g.setColor(new Color(255,255,255));
+
+        for (int i = 0; i < 10; i++) {          
+            for (int j = 0; j < 4; j++) {
+                if (pillarPositionY[i][0] < 360){
+                    midpointCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
+                    if ((int)pillarSize[i][j] > 1) {            
+                        floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255));
+                    }
+                }
+            }
+        }
     }
 
     private void drawBaby(Graphics2D g) {
@@ -185,6 +301,50 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 d -= dy;
             }
         }
+
+    }
+
+    private void floodFillBorder(Graphics g,int x, int y, Color[] borderColor, Color fillColor) {
+        int[] borderRGB;
+        if(borderColor != null){
+            borderRGB = new int[borderColor.length];
+            for (int i = 0; i < borderRGB.length; i++) {
+                borderRGB[i] = borderColor[i].getRGB();
+            }
+        }
+        else{
+            borderRGB = new int[] {-1};
+        }
+
+        if (!isIn(buffer.getRGB(x, y), borderRGB, fillColor.getRGB())) {
+            Queue<Point> queue = new LinkedList<>();
+            queue.add(new Point(x, y));
+
+            while (!queue.isEmpty()) {
+                Point point = queue.poll();
+                x = (int) point.getX();
+                y = (int) point.getY();
+
+                if (!isIn(buffer.getRGB(x, y), borderRGB, fillColor.getRGB())) {
+                    g.setColor(fillColor);
+                    plot(g, x, y);
+
+                    // Enqueue adjacent pixels
+                    if (x - 1 >= 0) queue.add(new Point(x - 1, y));
+                    if (x + 1 < 600) queue.add(new Point(x + 1, y));
+                    if (y - 1 >= 0) queue.add(new Point(x, y - 1));
+                    if (y + 1 < 600) queue.add(new Point(x, y + 1));
+                }
+            }
+        }
+    }
+
+    private boolean isIn(int color, int[] borderColor, int fillColor){
+        for (int i : borderColor) {
+            if(color == i || color == 0 || color == fillColor)
+                return true;
+        }
+        return false;
     }
 
     private void plot(Graphics g, int x, int y) {
