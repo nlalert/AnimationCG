@@ -99,28 +99,26 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             
             double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in second unit
 
-
             if(timer <= 3){
                 currentStage = Stage.Show;
             }
-            else if(timer <= 3 + 5/letterVelocity){
+            else if(timer <= 3.416){//3.416666666
                 currentStage = Stage.Text;
                 letter1 += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer <= 3 + 30/letterVelocity){
+            else if(timer <= 5.5){//3 + 30/letterVelocity
                 currentStage = Stage.Text;
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }
-
-            if(timer >= 4 && timer < 5 && tranparency < 255){   //dark screen transition at the 4th second  
+            else if(timer < 6.5 && tranparency < 255){   //dark screen transition at the 4th second  
+                currentStage = Stage.Evolve;
                 transition += 300 * elapsedTime / 1000.0;
                 if((int)transition % 36 == 3){
                     tranparency = transition;
                 }
             }
-
-            if(timer >= 5 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){   //dark screen transition at the 4th second
-
+            else if(timer >= 6.5 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){   //dark screen transition at the 4th second
+                currentStage = Stage.Evolve;
                 int baseSize = 12;
                 int baseLength = 300;
                 int finalLength = 100;
@@ -226,9 +224,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     //paint entire image on buffer
     private void paintImage() {
         Graphics2D g = buffer.createGraphics();
-        if(currentStage == Stage.Show){
-            drawBackground(g);
-        }
+        drawBackground(g);
         drawTextbox(g);
         drawText(g);
         drawEffect(g);
@@ -265,17 +261,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBackground(Graphics2D g) {
         //clean screen
-        int cleanAreaHeightStart = 0;
-        int cleanAreaHeightEnd = 450;
-        if(currentStage == Stage.Text){
-            cleanAreaHeightStart = 450;
-            cleanAreaHeightEnd = 600;
+        if(currentStage != Stage.Text){
+            g.setColor(new Color(0,0,0));
+            g.fillRect(0, 0, 600, 450);
         }
-        else{
-            
-        }
-        g.setColor(new Color(0,0,0));
-        g.fillRect(0, cleanAreaHeightStart, 600, cleanAreaHeightEnd);
 
         g.setColor(new Color(242,254,236));
         g.fillRect(0, 0, 600, 450);
@@ -741,7 +730,7 @@ enum Palette {
 
 enum Stage {
     Show,
-    Text;
+    Text, Evolve;
 
     // private final Color color;
 
