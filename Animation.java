@@ -20,6 +20,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     static Font font;
     private static BufferedImage buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);;
     private Stage currentStage = Stage.Show;
+
     Animation(){
         addMouseListener(this);
     }
@@ -45,10 +46,15 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         (new Thread(m)).start();
     }
 
+    // =============================================================================
+    // =============================================================================
+    //                             animation variable
+    // =============================================================================
+    // =============================================================================
     double letter1 = 0;
     double letter2 = 0;
-    String line1 = "What?";
-    String line2 = "Baby Chicken is evolving!";
+    String line1Text = "What?";
+    String line2Text = "Baby Chicken is evolving!";
     
     double tranparency = 0;
 
@@ -60,6 +66,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
     char[][] pillarDirection = new char[pillarLayers][pillarBalls];
+    double transition = 0;
+
 
     //start animation
     @Override
@@ -67,8 +75,45 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
         double letterVelocity = 12;
-        double transition = 0;
 
+        initializePillar();
+        
+        startTime = lastTime;
+        while (true) {
+
+            currentTime = System.currentTimeMillis();
+            elapsedTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
+
+            //0 - 3 second
+            if(timer <= 3){
+                currentStage = Stage.Show;
+            }//0 - 3.416 second
+            else if(timer <= 3 + 5/letterVelocity){
+                currentStage = Stage.Text;
+                letter1 += letterVelocity * elapsedTime / 1000.0;
+            }//3.416 - 5.5 second
+            else if(timer <= 3 + 30/letterVelocity){
+                currentStage = Stage.Text;
+                letter2 += letterVelocity * elapsedTime / 1000.0;
+            }//5.5 - 6.5 second
+            else if(timer <= 6.5 && tranparency < 255){//dark screen transition at the 4th second  
+                currentStage = Stage.Evolve;
+                updateTransparency(elapsedTime);
+            }//6.5 to 999999999999999999999999999999999999999999
+            else if(timer <= 999999999 && timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){//dark screen transition at the 4th second
+                currentStage = Stage.Evolve;
+                updatePillar();
+            }   
+        
+            //Display
+            repaint();
+        }
+    }
+
+    private void initializePillar() {
         for (double[] p : pillarPositionX) {
             p[0] = 300;
             p[1] = 300;
@@ -77,7 +122,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
 
         int layerGaps = 0;
-        double ballGaps = 40;
         for (double[] p : pillarPositionY) {
             p[4] = 360 + layerGaps;
             layerGaps += 2;
@@ -89,127 +133,94 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             d[2] = 'L';
             d[3] = 'R';
         }
-        
-        startTime = lastTime;
-        while (true) {
+    }
 
-            currentTime = System.currentTimeMillis();
-            elapsedTime = currentTime - lastTime;
-            lastTime = currentTime;
+    private void updatePillar() {
+        int baseSize = 12;
+        int baseLength = 300;
+        int finalLength = 100;
+
+        double veticalSpeed = 0.000006;
+        double horizontalSpeed = 0.0002;
+        double verticalVelocity = 60;
+        double ballGaps = 40;
+        for (int i = 0; i < pillarLayers; i++) {  
+                                    
+            double heightRatio = ((midpointY - pillarPositionY[i][4]) / midpointY);
             
-            double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in second unit
+            double currentSize = baseSize - heightRatio * baseSize;
+            double currentVerlocity =  veticalSpeed * (heightRatio * verticalVelocity);
 
-            if(timer <= 3){
-                currentStage = Stage.Show;
-            }
-            else if(timer <= 3.416){//3.416666666
-                currentStage = Stage.Text;
-                letter1 += letterVelocity * elapsedTime / 1000.0;
-            }
-            else if(timer <= 5.5){//3 + 30/letterVelocity
-                currentStage = Stage.Text;
-                letter2 += letterVelocity * elapsedTime / 1000.0;
-            }
-            else if(timer < 6.5 && tranparency < 255){   //dark screen transition at the 4th second  
-                currentStage = Stage.Evolve;
-                transition += 300 * elapsedTime / 1000.0;
-                if((int)transition % 36 == 3){
-                    tranparency = transition;
-                }
-            }
-            else if(timer >= 6.5 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){   //dark screen transition at the 4th second
-                currentStage = Stage.Evolve;
-                int baseSize = 12;
-                int baseLength = 300;
-                int finalLength = 100;
+            double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
+            double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
 
-                double veticalSpeed = 0.000006;
-                double horizontalSpeed = 0.0002;
-                double verticalVelocity = 60;
+            double a = (rightBorder - leftBorder) / 2;
+            double b = ballGaps / 2;
 
-                if ((currentTime-startTime) * 1000 % 1 == 0) {
-
-                    for (int i = 0; i < pillarLayers; i++) {  
-                                    
-                        double heightRatio = ((midpointY - pillarPositionY[i][4]) / midpointY);
+            for (int j = 0; j < pillarBalls+1; j++) {
+               
+                if (j == 0){
+                    if (heightRatio > 0){
+                        pillarPositionY[i][4] -= veticalSpeed + currentVerlocity;
+                    }
+                    else{
+                        pillarPositionY[i][4] -= veticalSpeed;
+                    }
+                }                             
+                
+                if (j < 4){
+                    
+                    if(pillarPositionY[i][4] <= midpointY){ 
                         
-                        double currentSize = baseSize - heightRatio * baseSize;
-                        double currentVerlocity =  veticalSpeed * (heightRatio * verticalVelocity);
-
-                        double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
-                        double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
-
-                        double a = (rightBorder - leftBorder) / 2;
-                        double b = ballGaps / 2;
-
-                        for (int j = 0; j < pillarBalls+1; j++) {
-                           
-                            if (j == 0){
-                                if (heightRatio > 0){
-                                    pillarPositionY[i][4] -= veticalSpeed + currentVerlocity;
-                                }
-                                else{
-                                    pillarPositionY[i][4] -= veticalSpeed;
-                                }
-                            }                             
-                            
-                            if (j < 4){
-                                
-                                if(pillarPositionY[i][4] <= midpointY){ 
-                                    
-                                    if(pillarPositionX[i][j] <= leftBorder){
-                                        pillarDirection[i][j] = 'R';
-                                    }
-                                    
-                                    else if(pillarPositionX[i][j] >= rightBorder){
-                                        pillarDirection[i][j] = 'L';
-                                    }
-                                    
-                                    if (pillarDirection[i][j] == 'L'){
-                                        pillarPositionX[i][j] -= horizontalSpeed;
-                                    }
-                                    
-                                    else if (pillarDirection[i][j] == 'R'){
-                                        pillarPositionX[i][j] += horizontalSpeed;
-                                    }
-                                    
-                                }
-                                
-                                pillarSize[i][j] = currentSize;
-                                double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - midpointX, 2)) * (b*b) / (a*a)));
-
-                                if (pillarDirection[i][j] == 'R') {
-                                    if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
-                                        pillarSize[i][j] -= 3;
-                                    }
-                                    else{
-                                        pillarSize[i][j] -= 2;
-                                    }
-                                    pillarPositionY[i][j] = (pillarPositionY[i][4] - b) - currentPositionY;  
-                                }
-
-                                else{
-                                    if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
-                                        pillarSize[i][j] -= 1;
-                                    }
-                                    pillarPositionY[i][j] = (pillarPositionY[i][4] - b) + currentPositionY; 
-                                }
-
-                            }
-
+                        if(pillarPositionX[i][j] <= leftBorder){
+                            pillarDirection[i][j] = 'R';
                         }
-
+                        
+                        else if(pillarPositionX[i][j] >= rightBorder){
+                            pillarDirection[i][j] = 'L';
+                        }
+                        
+                        if (pillarDirection[i][j] == 'L'){
+                            pillarPositionX[i][j] -= horizontalSpeed;
+                        }
+                        
+                        else if (pillarDirection[i][j] == 'R'){
+                            pillarPositionX[i][j] += horizontalSpeed;
+                        }
+                        
                     }
                     
+                    pillarSize[i][j] = currentSize;
+                    double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - midpointX, 2)) * (b*b) / (a*a)));
+
+                    if (pillarDirection[i][j] == 'R') {
+                        if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
+                            pillarSize[i][j] -= 3;
+                        }
+                        else{
+                            pillarSize[i][j] -= 2;
+                        }
+                        pillarPositionY[i][j] = (pillarPositionY[i][4] - b) - currentPositionY;  
+                    }
+
+                    else{
+                        if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
+                            pillarSize[i][j] -= 1;
+                        }
+                        pillarPositionY[i][j] = (pillarPositionY[i][4] - b) + currentPositionY; 
+                    }
+
                 }
 
-            }   
-            else{
-                currentStage = Stage.Show;
             }
-        
-            //Display
-            repaint();
+
+        }
+    }
+
+    private void updateTransparency(double elapsedTime) {
+        transition += 300 * elapsedTime / 1000.0;
+        if((int)transition % 36 == 3){
+            tranparency = transition;
         }
     }
 
@@ -218,42 +229,49 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         super.paintComponent(g);
         paintImage();
         g.drawImage(buffer, 0, 0, this);
-
     }
     
     //paint entire image on buffer
     private void paintImage() {
         Graphics2D g = buffer.createGraphics();
-        drawBackground(g);
+        if(currentStage != Stage.Text)
+            drawBackground(g);
+        if(currentStage == Stage.Evolve)
+            fadeToBlack(g);
         drawTextbox(g);
         drawText(g);
         drawEffect(g);
-        if(currentStage == Stage.Show){
+        if(currentStage == Stage.Show)
             drawBaby(g);
-            //drawKFC(g);
-        }
+        if(currentStage == Stage.KFC)
+            drawKFC(g);
+    }
+
+    private void fadeToBlack(Graphics2D g) {
+        g.setColor(new Color(0,0,0,(int)tranparency));
+        g.fillRect(0, 0, 600, 450);
     }
 
     private void drawText(Graphics2D g) {
         String text1 = "";
         String text2 = "";
-        for (int i = 0; i < letter1 && i < line1.length(); i++) {
-            text1 += line1.charAt(i);
+        for (int i = 0; i < letter1 && i < line1Text.length(); i++) {
+            text1 += line1Text.charAt(i);
         }
-        for (int i = 0; i < letter2 && i < line2.length(); i++) {
-            if(line2.charAt(i) == ' '){
-                text2 += line2.charAt(i);
+        for (int i = 0; i < letter2 && i < line2Text.length(); i++) {
+            if(line2Text.charAt(i) == ' '){
+                text2 += line2Text.charAt(i);
             }
-            text2 += line2.charAt(i);
+            text2 += line2Text.charAt(i);
         }
         g.setFont(font);
 
-        //draw text Shadow
+        //draw Shadow of Text
         g.setColor(new Color(86, 73, 84));
         g.drawString(text1, 38, 514);
         g.drawString(text2, 38, 564);
 
-        //draw text Real
+        //draw Real Text for reading
         g.setColor(new Color(200, 194, 205));
         g.drawString(text1, 35, 510);
         g.drawString(text2, 35, 560);
@@ -261,41 +279,41 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBackground(Graphics2D g) {
         //clean screen
-        if(currentStage != Stage.Text){
-            g.setColor(new Color(0,0,0));
-            g.fillRect(0, 0, 600, 450);
-        }
+        g.setColor(new Color(0,0,0));
+        g.fillRect(0, 0, 600, 450);
 
+        //light green background
         g.setColor(new Color(242,254,236));
         g.fillRect(0, 0, 600, 450);
 
+        //color lines background
         for (int i = 0; i < 40; i++) {
-
-            if (i == 0)       
-                g.setColor(new Color(183,222,241));
-
-            else if (i == 1)
-                g.setColor(new Color(195,232,228));
-
-            else if (i == 2)
-                g.setColor(new Color(209,241,222));
-
-            else if (i == 3)
-                g.setColor(new Color(221,249,215));
-
-            else
-                g.setColor(new Color(237,255,212));
-
+            Color color;
+            //switch-case for 4 color line on top screen
+            switch (i) {
+                case 0:
+                    color = new Color(183,222,241);
+                    break;
+                case 1:
+                    color = new Color(195,232,228);
+                    break;
+                case 2:
+                    color = new Color(209,241,222);
+                    break;
+                case 3:
+                    color = new Color(221,249,215);
+                    break;
+                default:
+                    color = new Color(237,255,212);
+                    break;
+            }
+            g.setColor(color);
             g.fillRect(0, i*15, 600, 12);
-
         }
-
-        g.setColor(new Color(0,0,0,(int)tranparency));
-        g.fillRect(0, 0, 600, 600);
     }
     
+    //draw text box on bottom part of screen
     private void drawTextbox(Graphics2D g) {
-
         g.setColor(new Color(62,57,70));
         g.fillRect(0, 450, 600, 150);
 
@@ -304,11 +322,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         g.setColor(new Color(93, 138, 147));
         g.fillRoundRect(20, 460, 560, 130, 10, 10);
-
     }
     
     private void drawEffect(Graphics2D g) {    
-
         if(pillarPositionY[pillarLayers-1][pillarBalls] >= 0 && pillarPositionY[0][4] < midpointY){
             drawPillar(g);
         }
@@ -339,20 +355,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBaby(Graphics2D g) {
         //หงอน
-        // g.setColor(Color.ORANGE);
-        // midpointCircle(g, 300, 300, 60);
-        // g.setColor(Color.BLACK);
-        // midpointCircle(g, 275, 275, 8);
-        // floodFillBorder(g, 275, 275, new Color[]{Color.BLACK}, Color.BLACK);
-        // midpointCircle(g, 325, 275, 8);
-        // floodFillBorder(g, 325, 275, new Color[]{Color.BLACK}, Color.BLACK);
-        // floodFillBorder(g, 300, 300, new Color[]{Color.ORANGE,Color.BLACK}, Color.ORANGE);
-        // g.setColor(Color.RED);
-        // drawCurve(g, 280, 243, 275, 234, 290, 225, 298, 231);
-        // drawCurve(g, 298, 231, 303, 213, 331, 228, 316, 243);
-        // floodFillBorder(g, 308, 232, new Color[]{Color.ORANGE,Color.RED}, Color.RED);
-        // g.setColor(Color.RED);
-        // fillTriangle(g, 290, 290, 310, 290, 300, 310);
         drawCurve(g, 54, 23, 54, 23, 61, 29, 62, 39);
         drawCurve(g, 60, 46, 60, 46, 65, 17, 96, 1);
         drawCurve(g, 96, 1, 101, 8, 90, 42, 90, 42);
@@ -368,7 +370,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawLine(g, 99, 0 ,99, 200);
         //left face
         drawCurve(g, 62, 54, 40, 51, 15, 60, 4, 81);
-            //left eye
+        //left eye
         midpointElispe(g, 5, 85, 3, 4);
         drawLine(g, 4, 68 ,46, 48);
     }
@@ -418,6 +420,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     //=============================================================================================================
     //=============================================================================================================
+
 
     //floodfill area seed at x,y to fill targetColor nearby with fillColor
     private void floodFill(Graphics g, int x, int y, Color targetColor, Color fillColor) {
@@ -730,7 +733,9 @@ enum Palette {
 
 enum Stage {
     Show,
-    Text, Evolve;
+    Text, 
+    Evolve,
+    KFC;
 
     // private final Color color;
 
