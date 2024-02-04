@@ -110,14 +110,14 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Text;
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer < 6.5 && tranparency < 255){   //dark screen transition at the 4th second  
+            else if(timer < 6.5 && tranparency < 255){//dark screen transition
                 currentStage = Stage.Evolve;
                 transition += 300 * elapsedTime / 1000.0;
                 if((int)transition % 36 == 3){
                     tranparency = transition;
                 }
             }
-            else if(timer >= 6.5 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){   //dark screen transition at the 4th second
+            else if(timer >= 6.5 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){//pillar of spinning balls
                 currentStage = Stage.Evolve;
                 int baseSize = 12;
                 int baseLength = 300;
@@ -138,8 +138,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
                         double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
                         double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
+                        double currentLength = rightBorder - leftBorder;
 
-                        double a = (rightBorder - leftBorder) / 2;
+                        double a = currentLength / 2;
                         double b = ballGaps / 2;
 
                         for (int j = 0; j < pillarBalls+1; j++) {
@@ -179,7 +180,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                                 double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - midpointX, 2)) * (b*b) / (a*a)));
 
                                 if (pillarDirection[i][j] == 'R') {
-                                    if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
+                                    if (pillarPositionX[i][j] - leftBorder <= currentLength / 3 * 2 && pillarPositionX[i][j] - leftBorder >= currentLength / 3){
                                         pillarSize[i][j] -= 3;
                                     }
                                     else{
@@ -189,7 +190,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                                 }
 
                                 else{
-                                    if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
+                                    if (pillarPositionX[i][j] - leftBorder <= currentLength / 3 * 2 && pillarPositionX[i][j] - leftBorder >= currentLength / 3){
                                         pillarSize[i][j] -= 1;
                                     }
                                     pillarPositionY[i][j] = (pillarPositionY[i][4] - b) + currentPositionY; 
