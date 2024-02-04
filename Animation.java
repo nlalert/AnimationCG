@@ -18,7 +18,8 @@ import javax.swing.JPanel;
 public class Animation extends JPanel implements Runnable,MouseListener{
 
     static Font font;
-    private static BufferedImage buffer;
+    private static BufferedImage buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);;
+    private Stage currentStage = Stage.Show;
     Animation(){
         addMouseListener(this);
     }
@@ -65,11 +66,20 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             
             double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in second unit
 
-            if(timer <= 5/letterVelocity){//first text line
+
+            if(timer <= 3){
+                currentStage = Stage.Show;
+            }
+            else if(timer <= 3 + 5/letterVelocity){
+                currentStage = Stage.Text;
                 letter1 += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer <= 30/letterVelocity){//second text line
+            else if(timer <= 3 + 30/letterVelocity){
+                currentStage = Stage.Text;
                 letter2 += letterVelocity * elapsedTime / 1000.0;
+            }
+            else{
+                currentStage = Stage.Show;
             }
         
             //Display
@@ -88,15 +98,19 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     
     //paint entire image on buffer
     private void paintImage() {
-        buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = buffer.createGraphics();
-        drawBackground(g);
+        if(currentStage == Stage.Show){
+            drawBackground(g);
+        }
         drawTextbox(g);
         drawText(g);
         drawEffect(g);
-        drawBaby(g);
+        if(currentStage == Stage.Show){
+            drawBaby(g);
+            //drawKFC(g);
+        }
     }
-   
+
     private void drawText(Graphics2D g) {
         String text1 = "";
         String text2 = "";
@@ -124,11 +138,20 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBackground(Graphics2D g) {
         //clean screen
+        int cleanAreaHeightStart = 0;
+        int cleanAreaHeightEnd = 450;
+        if(currentStage == Stage.Text){
+            cleanAreaHeightStart = 450;
+            cleanAreaHeightEnd = 600;
+        }
+        else{
+            
+        }
         g.setColor(new Color(0,0,0));
-        g.fillRect(0, 0, 600, 600);
+        g.fillRect(0, cleanAreaHeightStart, 600, cleanAreaHeightEnd);
 
         g.setColor(new Color(242,254,236,tranparentcy));
-        g.fillRect(0, 0, 600, 600);
+        g.fillRect(0, 0, 600, 450);
 
         for (int i = 0; i < 40; i++) {
 
@@ -172,20 +195,57 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBaby(Graphics2D g) {
         //หงอน
-        g.setColor(Color.ORANGE);
-        midpointCircle(g, 300, 300, 60);
+        // g.setColor(Color.ORANGE);
+        // midpointCircle(g, 300, 300, 60);
+        // g.setColor(Color.BLACK);
+        // midpointCircle(g, 275, 275, 8);
+        // floodFillBorder(g, 275, 275, new Color[]{Color.BLACK}, Color.BLACK);
+        // midpointCircle(g, 325, 275, 8);
+        // floodFillBorder(g, 325, 275, new Color[]{Color.BLACK}, Color.BLACK);
+        // floodFillBorder(g, 300, 300, new Color[]{Color.ORANGE,Color.BLACK}, Color.ORANGE);
+        // g.setColor(Color.RED);
+        // drawCurve(g, 280, 243, 275, 234, 290, 225, 298, 231);
+        // drawCurve(g, 298, 231, 303, 213, 331, 228, 316, 243);
+        // floodFillBorder(g, 308, 232, new Color[]{Color.ORANGE,Color.RED}, Color.RED);
+        // g.setColor(Color.RED);
+        // fillTriangle(g, 290, 290, 310, 290, 300, 310);
+        drawCurve(g, 54, 23, 54, 23, 61, 29, 62, 39);
+        drawCurve(g, 60, 46, 60, 46, 65, 17, 96, 1);
+        drawCurve(g, 96, 1, 101, 8, 90, 42, 90, 42);
+        drawCurve(g, 90, 42, 90, 42, 102, 32, 118, 30);
+        drawCurve(g, 118, 30, 118, 30, 109, 51, 78, 61);
+        //right face
+        g.setColor(Color.yellow.darker());
+        drawCurve(g, 62, 54, 62, 54, 65, 43, 73, 39);
+        drawCurve(g, 73, 39, 73, 39, 75, 42, 71, 55);
+        drawCurve(g, 71, 55, 71, 55, 75, 52, 78, 53);
+        drawCurve(g, 78, 53, 78, 53, 78, 55, 75, 60);
+        drawCurve(g, 75, 60, 110, 73, 106, 113, 69, 122);
+        drawLine(g, 99, 0 ,99, 200);
+        //left face
+        drawCurve(g, 62, 54, 40, 51, 15, 60, 4, 81);
+            //left eye
+        midpointElispe(g, 5, 85, 3, 4);
+        drawLine(g, 4, 68 ,46, 48);
+    }
+
+    private void drawKFC(Graphics2D g) {
+        //หงอน
         g.setColor(Color.BLACK);
-        midpointCircle(g, 275, 275, 8);
-        floodFillBorder(g, 275, 275, new Color[]{Color.BLACK}, Color.BLACK);
-        midpointCircle(g, 325, 275, 8);
-        floodFillBorder(g, 325, 275, new Color[]{Color.BLACK}, Color.BLACK);
-        floodFillBorder(g, 300, 300, new Color[]{Color.ORANGE,Color.BLACK}, Color.ORANGE);
-        g.setColor(Color.RED);
-        drawCurve(g, 280, 243, 275, 234, 290, 225, 298, 231);
-        drawCurve(g, 298, 231, 303, 213, 331, 228, 316, 243);
-        floodFillBorder(g, 308, 232, new Color[]{Color.ORANGE,Color.RED}, Color.RED);
-        g.setColor(Color.RED);
-        fillTriangle(g, 290, 290, 310, 290, 300, 310);
+        // //left side
+        // drawCurve(g, 220, 245, 220, 245, 240, 360, 240, 360);
+        // //bottom
+        // drawCurve(g, 240, 360, 265, 370, 345, 370, 360, 360);
+        // //right side
+        // drawCurve(g, 380, 245, 380, 245, 360, 360, 360, 360);
+        // //top
+        // drawCurve(g, 220, 245, 260, 255, 340, 255, 380, 245);
+        // //chicken
+        // drawCurve(g, 220, 245, 218, 226, 236, 215, 251, 223);
+        // drawCurve(g, 251, 223, 263, 228, 265, 249, 265, 249);
+        // drawCurve(g, 265, 249, 263, 259, 267, 264, 275, 267);
+        // drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
+        // drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
         // drawCurve(g, 54, 23, 54, 23, 61, 29, 62, 39);
         // drawCurve(g, 60, 46, 60, 46, 65, 17, 96, 1);
         // drawCurve(g, 96, 1, 101, 8, 90, 42, 90, 42);
@@ -205,6 +265,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         // midpointElispe(g, 5, 85, 3, 4);
         // drawLine(g, 4, 68 ,46, 48);
     }
+    
 
     //=============================================================================================================
     //=============================================================================================================
@@ -528,3 +589,19 @@ enum Palette {
         return color;
     }
 }
+
+enum Stage {
+    Show,
+    Text;
+
+    // private final Color color;
+
+    // // Stage(String colorCode) {
+    // //     this.color = new Color(Integer.parseInt(colorCode, 16));
+    // // }
+
+    // public Color getColor() {
+    //     return color;
+    // }
+}
+
