@@ -51,12 +51,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     
     double tranparency = 0;
 
-
     int pillarLayers = 10;
     int pillarBalls = 4;
+    int midpointX = 300;
+    int midpointY = 360;
     double[][] pillarSize = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
-    double[][] pillarPositionY = new double[pillarLayers][pillarBalls];
+    double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
     char[][] pillarDirection = new char[pillarLayers][pillarBalls];
 
     //start animation
@@ -75,12 +76,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
 
         int layerGaps = 0;
+        double ballGaps = 40;
         for (double[] p : pillarPositionY) {
-            p[0] = 360+layerGaps;
-            p[1] = 340+layerGaps;
-            p[2] = 350+layerGaps;
-            p[3] = 350+layerGaps;
-            layerGaps += 3;
+            p[4] = 360 + layerGaps;
+            layerGaps += 2;
         }
 
         for (char[] d : pillarDirection) {
@@ -113,58 +112,84 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }
 
-            if(timer >= 5){   //dark screen transition at the 4th second              
-                int midpointX = 300;
-                int midpointY = 360;
-                
-                int baseSize = 10;
+            if(timer >= 5){   //dark screen transition at the 4th second
+
+                int baseSize = 12;
                 int baseLength = 300;
                 int finalLength = 100;
 
-                double veticalSpeed = 0.000005;
-                double horizontalSpeed = 0.000075;
-                double verticalVelocity = 3;
+                double veticalSpeed = 0.000006;
+                double horizontalSpeed = 0.0002;
+                double verticalVelocity = 60;
 
                 if ((currentTime-startTime) * 1000 % 1 == 0) {
 
                     for (int i = 0; i < pillarLayers; i++) {  
                                     
-                        double heightRatio = ((midpointY - pillarPositionY[i][0]) / midpointY);
+                        double heightRatio = ((midpointY - pillarPositionY[i][4]) / midpointY);
                         
-                        double size = baseSize - heightRatio * baseSize;
-                        double currentVerlocity =  horizontalSpeed * heightRatio * verticalVelocity;
+                        double currentSize = baseSize - heightRatio * baseSize;
+                        double currentVerlocity =  veticalSpeed * (heightRatio * verticalVelocity);
 
                         double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
                         double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
 
-                        for (int j = 0; j < pillarBalls; j++) {
+                        double a = (rightBorder - leftBorder) / 2;
+                        double b = ballGaps / 2;
 
-                            pillarSize[i][j] = size;
+                        for (int j = 0; j < pillarBalls+1; j++) {
+                           
+                            if (j == 0){
+                                if (heightRatio > 0){
+                                    pillarPositionY[i][4] -= veticalSpeed + currentVerlocity;
+                                }
+                                else{
+                                    pillarPositionY[i][4] -= veticalSpeed;
+                                }
+                            }                             
+                            
+                            if (j < 4){
+                                
+                                if(pillarPositionY[i][4] <= midpointY){ 
+                                    
+                                    if(pillarPositionX[i][j] <= leftBorder){
+                                        pillarDirection[i][j] = 'R';
+                                    }
+                                    
+                                    else if(pillarPositionX[i][j] >= rightBorder){
+                                        pillarDirection[i][j] = 'L';
+                                    }
+                                    
+                                    if (pillarDirection[i][j] == 'L'){
+                                        pillarPositionX[i][j] -= horizontalSpeed;
+                                    }
+                                    
+                                    else if (pillarDirection[i][j] == 'R'){
+                                        pillarPositionX[i][j] += horizontalSpeed;
+                                    }
+                                    
+                                }
+                                
+                                pillarSize[i][j] = currentSize;
+                                double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - midpointX, 2)) * (b*b) / (a*a)));
 
-                            if (heightRatio > 0){
-                                pillarPositionY[i][j] -= veticalSpeed + currentVerlocity;
-                            }
-                            else{
-                                pillarPositionY[i][j] -= veticalSpeed;
-                            }
+                                if (pillarDirection[i][j] == 'R') {
+                                    if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
+                                        pillarSize[i][j] -= 3;
+                                    }
+                                    else{
+                                        pillarSize[i][j] -= 2;
+                                    }
+                                    pillarPositionY[i][j] = (pillarPositionY[i][4] - b) - currentPositionY;  
+                                }
 
-                            if(pillarPositionY[i][0] <= 360){ 
-               
-                                if(pillarPositionX[i][j] <= leftBorder){
-                                    pillarDirection[i][j] = 'R';
+                                else{
+                                    if (pillarPositionX[i][j] - leftBorder <= (rightBorder - leftBorder) / 3 * 2 && pillarPositionX[i][j] - leftBorder >= (rightBorder - leftBorder) / 3){
+                                        pillarSize[i][j] -= 1;
+                                    }
+                                    pillarPositionY[i][j] = (pillarPositionY[i][4] - b) + currentPositionY; 
                                 }
-    
-                                else if(pillarPositionX[i][j] >= rightBorder){
-                                    pillarDirection[i][j] = 'L';
-                                }
-        
-                                if (pillarDirection[i][j] == 'L'){
-                                    pillarPositionX[i][j] -= horizontalSpeed;
-                                }
-    
-                                else if (pillarDirection[i][j] == 'R'){
-                                    pillarPositionX[i][j] += horizontalSpeed;
-                                }
+
                             }
 
                         }
@@ -173,8 +198,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     
                 }
 
-            }
-        
+            }   
             //Display
             repaint();
         }
@@ -275,13 +299,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
             for (int j = 0; j < pillarBalls; j++) {
 
-                if (pillarPositionY[i][0] < 360){
+                if (pillarPositionY[i][4] < midpointY){
                     midpointCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
-
                     if ((int)pillarSize[i][j] > 1) {   
                         floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255));
                     }
-
                 }
 
             }
