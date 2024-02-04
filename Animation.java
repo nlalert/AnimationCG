@@ -112,7 +112,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }
 
-            if(timer >= 5){   //dark screen transition at the 4th second
+            if(timer >= 5 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){   //dark screen transition at the 4th second
 
                 int baseSize = 12;
                 int baseLength = 300;
@@ -287,8 +287,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     }
     
-    private void drawEffect(Graphics2D g) {
-        drawPillar(g);
+    private void drawEffect(Graphics2D g) {    
+
+        if(pillarPositionY[pillarLayers-1][pillarBalls] >= 0 && pillarPositionY[0][4] < midpointY){
+            drawPillar(g);
+        }
     }
 
     private void drawPillar(Graphics2D g) {
@@ -300,10 +303,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             for (int j = 0; j < pillarBalls; j++) {
 
                 if (pillarPositionY[i][4] < midpointY){
+
                     midpointCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
+                    
                     if ((int)pillarSize[i][j] > 1) {   
                         floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255));
                     }
+
                 }
 
             }
