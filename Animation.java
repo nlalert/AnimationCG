@@ -114,24 +114,28 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     private void initializePillar() {
-        for (double[] p : pillarPositionX) {
-            p[0] = 300;
-            p[1] = 300;
-            p[2] = 450;
-            p[3] = 150;
+
+        //Set a horizontal position of each balls in the layer of the pillar
+        for (double[] px : pillarPositionX) {
+            px[0] = 300; //1st ball of each layer at x = 300
+            px[1] = 300; //2nd ball of each layer at x = 300
+            px[2] = 450; //3rd ball of each layer at x = 450
+            px[3] = 150; //4th ball of each layer at x = 150
         }
 
+        //Set a vertical position of each layer of the pillar
         int layerGaps = 0;
-        for (double[] p : pillarPositionY) {
-            p[4] = 360 + layerGaps;
+        for (double[] py : pillarPositionY) {
+            py[4] = 360 + layerGaps;
             layerGaps += 2;
         }
 
+        //Set a horizontal direction of each balls in the layer of the pillar
         for (char[] d : pillarDirection) {
-            d[0] = 'L';
-            d[1] = 'R';
-            d[2] = 'L';
-            d[3] = 'R';
+            d[0] = 'L'; //1st ball of each layer move to the left
+            d[1] = 'R'; //2st ball of each layer move to the right
+            d[2] = 'L'; //3rd ball of each layer move to the left
+            d[3] = 'R'; //4th ball of each layer move to the right
         }
     }
 
