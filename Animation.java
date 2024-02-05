@@ -21,6 +21,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     private static BufferedImage buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);;
     private Stage currentStage = Stage.Show;
     boolean isDraw = false;
+    boolean isText = true;
     Animation(){
         addMouseListener(this);
     }
@@ -103,6 +104,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }//5.5 - 6.5 second
             else if(timer <= 6.5 && tranparency < 255){//dark screen transition at the 4th second  
+                isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 to 999999999999999999999999999999999999999999
@@ -253,9 +255,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             drawBackground(g);
         if(currentStage == Stage.Evolve)
             fadeToBlack(g);
-        drawTextbox(g);
-        drawText(g);
-        drawEffect(g);
+            drawEffect(g);
+        if(isText){
+            drawTextbox(g);
+            drawText(g);
+        }
         if(currentStage == Stage.Show && !isDraw)
             drawBaby(g);
         if(currentStage == Stage.KFC)
@@ -427,6 +431,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawCurve(g, 15+250, 138+150, 15+250, 138+150, 21+250, 136+150, 21+250, 136+150);
         drawCurve(g, 21+250, 136+150, 21+250, 136+150, 24+250, 141+150, 24+250, 141+150);
         drawCurve(g, 24+250, 141+150, 24+250, 141+150, 31+250, 130+150, 31+250, 130+150);
+        drawCurve(g, 24+250, 141+150, 24+250, 141+150, 281, 280, 281, 280);
         //right wing?
         drawCurve(g, 46+250, 133+150, 46+250, 133+150, 51+250, 145+150, 51+250, 145+150);
         drawCurve(g, 51+250, 145+150, 51+250, 145+150, 53+250, 138+150, 53+250, 138+150);
@@ -441,10 +446,24 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawCurve(g, 83+250, 128+150, 83+250, 128+150, 87+250, 125+150, 87+250, 125+150);
         drawCurve(g, 87+250, 125+150, 87+250, 125+150, 76+250, 120+150, 76+250, 120+150);
 
+        g.setColor(Palette.FEATHER.getColor());
+        //left upper wing
+        drawCurve(g, 281, 280, 281, 280, 35+250, 123+150, 35+250, 123+150);
+        drawCurve(g, 35+250, 123+150, 35+250, 123+150, 32+250, 124+150, 32+250, 124+150);
+        drawCurve(g, 32+250, 124+150, 32+250, 124+150, 28+250, 119+150, 28+250, 119+150);
+        //right upper wing
+        drawCurve(g, 46+250, 133+150, 46+250, 133+150, 44+250, 122+150, 44+250, 122+150);
+        drawCurve(g, 44+250, 122+150, 44+250, 122+150, 48+250, 127+150, 48+250, 127+150);
+        drawCurve(g, 48+250, 127+150, 48+250, 127+150, 48+250, 121+150, 48+250, 121+150);
+        drawCurve(g, 48+250, 121+150, 48+250, 121+150, 57+250, 128+150, 57+250, 128+150);
+        drawCurve(g, 57+250, 128+150, 57+250, 128+150, 56+250, 123+150, 56+250, 123+150);
+        drawCurve(g, 56+250, 123+150, 56+250, 123+150, 68+250, 122+150, 68+250, 122+150);
+
         //g.scale(0.5, 0.5);
         floodFillBorder(g, 331, 177, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()}, Palette.FEATHER.getColor());
         floodFillBorder(g, 309, 220, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()
-                                                    ,Palette.HARDPART.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.BODY.getColor());
+                                                    ,Palette.HARDPART.getColor(), Palette.HARDPART_OUTLINE.getColor()
+                                                    ,Palette.FEATHER.getColor()}, Palette.BODY.getColor());
         floodFillBorder(g, 271, 248, new Color[]{Palette.HARDPART.getColor()}, Palette.HARDPART.getColor());
 
         floodFillBorder(g, 294, 325, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor());
@@ -454,6 +473,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         
         floodFillBorder(g, 304, 250, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor());
         floodFillBorder(g, 255, 241, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor());
+
+        floodFillBorder(g, 273, 277, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER.getColor()}, Palette.FEATHER.getColor());
+        floodFillBorder(g, 322, 284, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER.getColor()}, Palette.FEATHER.getColor());
+
+        floodFillBorder(g, 255, 232, new Color[]{Palette.BLACK.getColor()}, Color.WHITE);
+        floodFillBorder(g, 305, 240, new Color[]{Palette.BLACK.getColor()}, Color.WHITE);
         isDraw = true;
     }
 
@@ -630,7 +655,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     
     //draw curve line with bezier's curve algorithm
     private void drawCurve(Graphics2D g, int x1,int y1,int x2,int y2, int x3,int y3, int x4,int y4){
-        float sampleAmnt = 100000;
+        float sampleAmnt = 10000;
         for (int i = 0; i < sampleAmnt; i++) {
             float t = i/sampleAmnt;
             int x = (int)(Math.pow((1-t), 3)*x1 + 
