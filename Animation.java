@@ -20,7 +20,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     static Font font;
     private static BufferedImage buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);;
     private Stage currentStage = Stage.Show;
-
+    boolean isDraw = false;
     Animation(){
         addMouseListener(this);
     }
@@ -51,6 +51,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     //                             animation variable
     // =============================================================================
     // =============================================================================
+
     double letter1 = 0;
     double letter2 = 0;
     String line1Text = "What?";
@@ -74,7 +75,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     public void run() {
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
-        double letterVelocity = 12;
+        double letterVelocity = 10;
 
         initializePillar();
         
@@ -86,7 +87,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             lastTime = currentTime;
             
             double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
-
+            //System.out.println(elapsedTime);
+            // System.out.println(timer);
+            // System.out.println(letter1);
             //0 - 3 second
             if(timer <= 3){
                 currentStage = Stage.Show;
@@ -132,6 +135,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             d[1] = 'R';
             d[2] = 'L';
             d[3] = 'R';
+        }
+    }
+
+    private void updateTransparency(double elapsedTime) {
+        transition += 300 * elapsedTime / 1000.0;
+        if((int)transition % 36 == 3){
+            tranparency = transition;
         }
     }
 
@@ -217,12 +227,17 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
-    private void updateTransparency(double elapsedTime) {
-        transition += 300 * elapsedTime / 1000.0;
-        if((int)transition % 36 == 3){
-            tranparency = transition;
-        }
-    }
+
+
+    //=============================================================================================================
+    //=============================================================================================================
+
+                                            // Paint Zone
+
+    //=============================================================================================================
+    //=============================================================================================================
+
+
 
     @Override
     public void paintComponent(Graphics g) {
@@ -234,47 +249,17 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     //paint entire image on buffer
     private void paintImage() {
         Graphics2D g = buffer.createGraphics();
-        if(currentStage != Stage.Text)
+        if(currentStage != Stage.Text && !isDraw)
             drawBackground(g);
         if(currentStage == Stage.Evolve)
             fadeToBlack(g);
         drawTextbox(g);
         drawText(g);
         drawEffect(g);
-        if(currentStage == Stage.Show)
+        if(currentStage == Stage.Show && !isDraw)
             drawBaby(g);
         if(currentStage == Stage.KFC)
             drawKFC(g);
-    }
-
-    private void fadeToBlack(Graphics2D g) {
-        g.setColor(new Color(0,0,0,(int)tranparency));
-        g.fillRect(0, 0, 600, 450);
-    }
-
-    private void drawText(Graphics2D g) {
-        String text1 = "";
-        String text2 = "";
-        for (int i = 0; i < letter1 && i < line1Text.length(); i++) {
-            text1 += line1Text.charAt(i);
-        }
-        for (int i = 0; i < letter2 && i < line2Text.length(); i++) {
-            if(line2Text.charAt(i) == ' '){
-                text2 += line2Text.charAt(i);
-            }
-            text2 += line2Text.charAt(i);
-        }
-        g.setFont(font);
-
-        //draw Shadow of Text
-        g.setColor(new Color(86, 73, 84));
-        g.drawString(text1, 38, 514);
-        g.drawString(text2, 38, 564);
-
-        //draw Real Text for reading
-        g.setColor(new Color(200, 194, 205));
-        g.drawString(text1, 35, 510);
-        g.drawString(text2, 35, 560);
     }
 
     private void drawBackground(Graphics2D g) {
@@ -311,6 +296,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             g.fillRect(0, i*15, 600, 12);
         }
     }
+
+    private void fadeToBlack(Graphics2D g) {
+        g.setColor(new Color(0,0,0,(int)tranparency));
+        g.fillRect(0, 0, 600, 450);
+    }
     
     //draw text box on bottom part of screen
     private void drawTextbox(Graphics2D g) {
@@ -323,6 +313,29 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.setColor(new Color(93, 138, 147));
         g.fillRoundRect(20, 460, 560, 130, 10, 10);
     }
+
+    private void drawText(Graphics2D g) {
+        String text1 = "";
+        String text2 = "";
+        for (int i = 0; i < letter1 && i < line1Text.length(); i++) 
+            text1 += line1Text.charAt(i);
+        for (int i = 0; i < letter2 && i < line2Text.length(); i++){
+            if(line2Text.charAt(i) == ' ')
+                text2 += line2Text.charAt(i);
+            text2 += line2Text.charAt(i);
+        }
+        g.setFont(font);
+
+        //draw Shadow of Text
+        g.setColor(new Color(86, 73, 84));
+        g.drawString(text1, 38, 514);
+        g.drawString(text2, 38, 564);
+
+        //draw Real Text for reading
+        g.setColor(new Color(200, 194, 205));
+        g.drawString(text1, 35, 510);
+        g.drawString(text2, 35, 560);
+    }
     
     private void drawEffect(Graphics2D g) {    
         if(pillarPositionY[pillarLayers-1][pillarBalls] >= 0 && pillarPositionY[0][4] < midpointY){
@@ -331,48 +344,117 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     private void drawPillar(Graphics2D g) {
-
         g.setColor(new Color(255,255,255));
-
         for (int i = 0; i < pillarLayers; i++) {   
-
             for (int j = 0; j < pillarBalls; j++) {
-
                 if (pillarPositionY[i][4] < midpointY){
-
-                    midpointCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
-                    
+                    drawCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
                     if ((int)pillarSize[i][j] > 1) {   
                         floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255));
                     }
-
                 }
-
             }
-
         }
     }
 
     private void drawBaby(Graphics2D g) {
-        //หงอน
-        drawCurve(g, 54, 23, 54, 23, 61, 29, 62, 39);
-        drawCurve(g, 60, 46, 60, 46, 65, 17, 96, 1);
-        drawCurve(g, 96, 1, 101, 8, 90, 42, 90, 42);
-        drawCurve(g, 90, 42, 90, 42, 102, 32, 118, 30);
-        drawCurve(g, 118, 30, 118, 30, 109, 51, 78, 61);
+        //g.scale(2, 2);
         //right face
-        g.setColor(Color.yellow.darker());
-        drawCurve(g, 62, 54, 62, 54, 65, 43, 73, 39);
-        drawCurve(g, 73, 39, 73, 39, 75, 42, 71, 55);
-        drawCurve(g, 71, 55, 71, 55, 75, 52, 78, 53);
-        drawCurve(g, 78, 53, 78, 53, 78, 55, 75, 60);
-        drawCurve(g, 75, 60, 110, 73, 106, 113, 69, 122);
-        drawLine(g, 99, 0 ,99, 200);
+        g.setColor(Palette.BLACK.getColor());
+        drawCurve(g, 62+250, 54+150, 62+250, 54+150, 65+250, 43+150, 73+250, 39+150);
+        drawCurve(g, 73+250, 39+150, 73+250, 39+150, 75+250, 42+150, 71+250, 55+150);
+        drawCurve(g, 71+250, 55+150, 71+250, 55+150, 75+250, 52+150, 78+250, 53+150);
+        drawCurve(g, 78+250, 53+150, 78+250, 53+150, 78+250, 55+150, 75+250, 60+150);
+        drawCurve(g, 75+250, 60+150, 110+250, 73+150, 106+250, 113+150, 69+250, 122+150);
         //left face
-        drawCurve(g, 62, 54, 40, 51, 15, 60, 4, 81);
+        drawCurve(g, 62+250, 54+150, 40+250, 51+150, 15+250, 60+150, 4+250, 78+150);
         //left eye
-        midpointElispe(g, 5, 85, 3, 4);
-        drawLine(g, 4, 68 ,46, 48);
+        drawElipse(g, 5+250, 86+150, 4, 10);
+        drawElipse(g, 5+250, 82+150, 4, 6);
+        //drawElipse(g, 6, 92, 2, 4);
+        //right eye
+        drawElipse(g, 55+250, 94+150, 8, 9);
+        drawElipse(g, 55+250, 91+150, 5, 6);
+        //drawElipse(g, 57, 99, 4, 4);
+        //left face
+        drawCurve(g, 6+250, 98+150, 6+250, 98+150, 13+250, 114+150, 27+250, 118+150);
+        //bottom
+        drawCurve(g, 20+250, 136+150, 25+250, 173+150, 70+250, 173+150, 87+250, 145+150);
+        drawCurve(g, 87+250, 145+150, 87+250, 145+150, 81+250, 138+150, 81+250, 138+150);
+        g.setColor(Palette.HARDPART.getColor());
+        //beak
+        drawCurve(g, 10+250, 101+150, 17+250, 105+150, 30+250, 106+150, 37+250, 102+150);
+        drawCurve(g, 37+250, 102+150, 36+250, 98+150, 27+250, 97+150, 25+250, 93+150);
+        drawCurve(g, 25+250, 93+150, 23+250, 90+150, 19+250, 90+150, 16+250, 93+150);
+        drawCurve(g, 16+250, 93+150, 11+250, 95+150, 8+250, 98+150, 10+250, 101+150);
+        g.setColor(Palette.HARDPART_OUTLINE.getColor());
+        //left feet?
+        drawCurve(g, 44+250, 164+150, 44+250, 169+150, 41+250, 172+150, 41+250, 172+150);
+        drawCurve(g, 41+250, 172+150, 26+250, 169+150, 21+250, 172+150, 18+250, 178+150);
+        drawCurve(g, 18+250, 178+150, 16+250, 184+150, 17+250, 186+150, 21+250, 187+150);
+        drawCurve(g, 21+250, 187+150, 26+250, 179+150, 33+250, 179+150, 33+250, 179+150);
+
+        drawCurve(g, 40+250, 175+150, 30+250, 177+150, 27+250, 186+150, 35+250, 193+150);
+        drawCurve(g, 35+250, 193+150, 36+250, 184+150, 38+250, 183+150, 42+250, 183+150);
+
+        drawCurve(g, 47+250, 177+150, 40+250, 180+150, 38+250, 189+150, 46+250, 195+150);
+        drawCurve(g, 46+250, 195+150, 49+250, 196+150, 50+250, 195+150, 49+250, 187+150);
+        drawCurve(g, 49+250, 187+150, 51+250, 181+150, 54+250, 179+150, 59+250, 182+150);
+        drawCurve(g, 59+250, 182+150, 62+250, 183+150, 64+250, 181+150, 62+250, 179+150);
+        drawCurve(g, 62+250, 179+150, 61+250, 175+150, 58+250, 173+150, 52+250, 174+150);
+        drawCurve(g, 52+250, 174+150, 48+250, 174+150, 47+250, 172+150, 50+250, 165+150);
+        //right feet?
+        drawCurve(g, 53+250, 164+150, 55+250, 165+150, 52+250, 172+150, 60+250, 172+150);
+        drawCurve(g, 58+250, 165+150, 60+250, 173+150, 60+250, 176+150, 70+250, 171+150);
+        drawCurve(g, 65+250, 164+150, 66+250, 169+150, 69+250, 171+150, 75+250, 170+150);
+        drawCurve(g, 74+250, 170+150, 80+250, 165+150, 79+250, 162+150, 76+250, 163+150);
+        drawCurve(g, 76+250, 163+150, 71+250, 163+150, 71+250, 163+150, 71+250, 161+150);
+
+        g.setColor(Palette.FEATHER_OUTLINE.getColor());
+        //Comb
+        drawCurve(g, 53+250, 53+150, 46+250, 42+150, 54+250, 23+150, 54+250, 23+150);
+        drawCurve(g, 54+250, 23+150, 54+250, 23+150, 61+250, 29+150, 62+250, 39+150);
+        drawCurve(g, 60+250, 46+150, 60+250, 46+150, 65+250, 17+150, 96+250, 1+150);
+        drawCurve(g, 96+250, 1+150, 101+250, 8+150, 90+250, 42+150, 90+250, 42+150);
+        drawCurve(g, 90+250, 42+150, 90+250, 42+150, 102+250, 32+150, 118+250, 30+150);
+        drawCurve(g, 118+250, 30+150, 118+250, 30+150, 109+250, 51+150, 78+250, 61+150);
+        //left wing?
+        drawCurve(g, 27+250, 118+150, 18+250, 118+150, 9+250, 125+150, 9+250, 125+150);
+        drawCurve(g, 9+250, 125+150, 9+250, 125+150, 15+250, 125+150, 15+250, 125+150);
+        drawCurve(g, 15+250, 125+150, 15+250, 125+150, 11+250, 131+150, 11+250, 131+150);
+        drawCurve(g, 11+250, 131+150, 11+250, 131+150, 17+250, 131+150, 17+250, 131+150);
+        drawCurve(g, 17+250, 131+150, 17+250, 131+150, 15+250, 138+150, 15+250, 138+150);
+        drawCurve(g, 15+250, 138+150, 15+250, 138+150, 21+250, 136+150, 21+250, 136+150);
+        drawCurve(g, 21+250, 136+150, 21+250, 136+150, 24+250, 141+150, 24+250, 141+150);
+        drawCurve(g, 24+250, 141+150, 24+250, 141+150, 31+250, 130+150, 31+250, 130+150);
+        //right wing?
+        drawCurve(g, 46+250, 133+150, 46+250, 133+150, 51+250, 145+150, 51+250, 145+150);
+        drawCurve(g, 51+250, 145+150, 51+250, 145+150, 53+250, 138+150, 53+250, 138+150);
+        drawCurve(g, 53+250, 138+150, 53+250, 138+150, 62+250, 149+150, 62+250, 149+150);
+        drawCurve(g, 62+250, 149+150, 62+250, 149+150, 62+250, 142+150, 62+250, 142+150);
+        drawCurve(g, 62+250, 142+150, 62+250, 142+150, 73+250, 149+150, 73+250, 149+150);
+        drawCurve(g, 73+250, 149+150, 73+250, 149+150, 73+250, 140+150, 73+250, 140+150);
+        drawCurve(g, 73+250, 140+150, 75+250, 143+150, 81+250, 142+150, 81+250, 142+150);
+        drawCurve(g, 81+250, 142+150, 81+250, 142+150, 79+250, 136+150, 79+250, 136+150);
+        drawCurve(g, 81+250, 138+150, 81+250, 138+150, 89+250, 137+150, 89+250, 137+150);
+        drawCurve(g, 89+250, 137+150, 89+250, 137+150, 83+250, 128+150, 83+250, 128+150);
+        drawCurve(g, 83+250, 128+150, 83+250, 128+150, 87+250, 125+150, 87+250, 125+150);
+        drawCurve(g, 87+250, 125+150, 87+250, 125+150, 76+250, 120+150, 76+250, 120+150);
+
+        //g.scale(0.5, 0.5);
+        floodFillBorder(g, 331, 177, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()}, Palette.FEATHER.getColor());
+        floodFillBorder(g, 309, 220, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()
+                                                    ,Palette.HARDPART.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.BODY.getColor());
+        floodFillBorder(g, 271, 248, new Color[]{Palette.HARDPART.getColor()}, Palette.HARDPART.getColor());
+
+        floodFillBorder(g, 294, 325, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor());
+        floodFillBorder(g, 306, 318, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor());
+        floodFillBorder(g, 312, 317, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor());
+        floodFillBorder(g, 321, 316, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor());
+        
+        floodFillBorder(g, 304, 250, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor());
+        floodFillBorder(g, 255, 241, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor());
+        isDraw = true;
     }
 
     private void drawKFC(Graphics2D g) {
@@ -598,7 +680,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
-     private void midpointCircle(Graphics g, int xc, int yc, int r) {
+     private void drawCircle(Graphics g, int xc, int yc, int r) {
         int x = 0;
         int y = r;
         int Dx = 2 * x;
@@ -618,7 +700,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
-    private void midpointElispe(Graphics g, int xc, int yc, int a, int b) {
+    private void drawElipse(Graphics g, int xc, int yc, int a, int b) {
         int a2 = a*a, b2 = b*b;
         int twoA2 = 2*a2, twoB2 = 2*b2;
 
@@ -705,20 +787,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 //Color Palette for drawing in this assignment
 enum Palette {
     //HEX Color Code without prefix "#" only number and letter
-    SKY1("FFDA5F"),
-    SKY2("FCA29A"),
-    SUN("F84434"),
-    FUJI("2A4A87"),
-    SNOW("FEFEFE"),
-    LAND("1B0A12"),
-    CLOUD("AFD4E7"),
-    BRANCH("953C38"),
-    POLLEN("F8BF81"),
-    PETAL("FB7D91"),
-    PETALSHADOW("F64764"),
-    TEXT("000000"), 
-    RIBBONBORDER("cc0000"),
-    RIBBON("ff3333");
+    BLACK("09040b"),
+    BODY("f1a044"),
+    HARDPART("f5e997"),
+    HARDPART_OUTLINE("09040b"),
+    FEATHER("fad457"),
+    FEATHER_OUTLINE("09040b");
 
     private final Color color;
 
