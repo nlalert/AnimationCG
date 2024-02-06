@@ -7,6 +7,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.LinkedList;
@@ -60,8 +61,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     double letter1 = 0;
     double letter2 = 0;
+    double letter3 = 0;
+    double letter4 = 0;
     String line1Text = "What?";
-    String line2Text = "Baby Chicken is evolving!";
+    String line2Text = "BABY CHICK is evolving!";
+    String line3Text = "Congratulations! BABY CHICK";
+    String line4Text = "evolved into CHUD-JUJAI!";
     
     double tranparency = 0;
 
@@ -77,8 +82,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     double chickenMove = 0;
     double chickenVelocity = -100;
     double chickenScale = 1;
-    double chickenScaleVelocity = 1;
+    double chickenScaleVelocity = 2;
     double chickenScaleAccelerate = 0.7;
+    double KFCScale = 0;
+    double KFCScaleVelocity = 2;
+    double KFCScaleAccelerate = 0.7;
     double timer = 0;
 
     // =============================================================================
@@ -124,10 +132,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }//0 - 3.416 second
             else if(timer <= 6 + 5/letterVelocity){
+                isText = true;
                 currentStage = Stage.Text;
                 letter1 += letterVelocity * elapsedTime / 1000.0;
             }//3.416 - 5.5 second
-            else if(timer <= 6 + 30/letterVelocity){
+            else if(timer <= 6 + 28/letterVelocity){
+                isText = true;
                 currentStage = Stage.Text;
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }//5.5 - 6.5 second
@@ -143,7 +153,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Evolve;
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-            else if(timer <= 25 || chickenScale <= 0.8){
+            else if(timer <= 25 || chickenScale > 0.1){
                 currentStage = Stage.Evolve;
                 chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
                 chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
@@ -157,6 +167,29 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     chickenScaleVelocity = -chickenScaleVelocity;
                     chickenScaleAccelerate = -chickenScaleAccelerate;
                 }
+
+                KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
+                KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
+                if(KFCScale >= 1){
+                    KFCScale = 1;
+                    KFCScaleVelocity = -KFCScaleVelocity;
+                    KFCScaleAccelerate = -KFCScaleAccelerate;
+                }
+                else if(KFCScale <= 0.0000000000000000000001){
+                    KFCScale = 0.0000000000000000000001;
+                    KFCScaleVelocity = -KFCScaleVelocity;
+                    KFCScaleAccelerate = -KFCScaleAccelerate;
+                }
+            }
+            else if(timer <= 25 + 27/letterVelocity){
+                isText = true;
+                currentStage = Stage.Text;
+                letter3 += letterVelocity * elapsedTime / 1000.0;
+            }
+            else if(timer <= 25 + 51/letterVelocity){
+                isText = true;
+                currentStage = Stage.Text;
+                letter4 += letterVelocity * elapsedTime / 1000.0;
             }
         
             //Display
@@ -169,40 +202,41 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         
         g.setColor(new Color(255,255,255,1));
         g.fillRect(0, 0, 600, 600);
-        g.setColor(Palette.BLACK.getColor());
+        g.setColor(Color.WHITE);
         //left
-        drawCurve(g, 75, 67, 75, 67, 90, 168, 90, 168);
+        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 90+165, 168+165, 90+165, 168+165);
         //bottom
-        drawCurve(g, 90, 168, 122, 181, 159, 181, 190, 168);
+        drawCurve(g, 90+165, 168+165, 122+165, 181+165, 159+165, 181+165, 190+165, 168+165);
         //right
-        drawCurve(g, 190, 168, 190, 168, 205, 67, 205, 67);
+        drawCurve(g, 190+165, 168+165, 190+165, 168+165, 205+165, 67+165, 205+165, 67+165);
         //rim
-        drawCurve(g, 71, 65, 100, 78, 178, 78, 208, 65);
-        drawCurve(g, 71, 62, 100, 75, 178, 75, 208, 62);
+        //drawCurve(g, 71+165, 65+165, 100+165, 78+165, 178+165, 78+165, 208+165, 65+165);
+        //drawCurve(g, 71+165, 62+165, 100+165, 75+165, 178+165, 75+165, 208+165, 62+165);
+        //left rim
+        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 74+165, 62+165, 74+165, 62+165);
+        //right rim
+        drawCurve(g, 202+165, 62+165, 202+165, 62+165, 205+165, 67+165, 205+165, 67+165);
         //red bar 1
-        drawCurve(g, 82, 71, 82, 71, 92, 144, 92, 144);
-        drawCurve(g, 92, 144, 92, 144, 105, 148, 105, 148);
-        drawCurve(g, 105, 148, 105, 148, 97, 73, 97, 73);
+        //drawCurve(g, 82+165, 71+165, 82+165, 71+165, 92+165, 144+165, 92+165, 144+165);
+        //drawCurve(g, 92+165, 144+165, 92+165, 144+165, 105+165, 148+165, 105+165, 148+165);
+        //drawCurve(g, 105+165, 148+165, 105+165, 148+165, 97+165, 73+165, 97+165, 73+165);
         //red bar 2
-        drawCurve(g, 189, 71, 189, 71, 182, 145, 182, 145);
-        drawCurve(g, 182, 145, 182, 145, 191, 141, 191, 141);
-        drawCurve(g, 191, 141, 191, 141, 202, 68, 202, 68);
-        
-
-        // //left side
-        // drawCurve(g, 220, 245, 220, 245, 240, 360, 240, 360);
-        // //bottom
-        // drawCurve(g, 240, 360, 265, 370, 345, 370, 360, 360);
-        // //right side
-        // drawCurve(g, 380, 245, 380, 245, 360, 360, 360, 360);
-        // //top
-        // drawCurve(g, 220, 245, 260, 255, 340, 255, 380, 245);
-        // //chicken
-        // drawCurve(g, 220, 245, 218, 226, 236, 215, 251, 223);
-        // drawCurve(g, 251, 223, 263, 228, 265, 249, 265, 249);
-        //drawCurve(g, 265, 249, 263, 259, 267, 264, 275, 267);
-        //drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
-        //drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
+        //drawCurve(g, 189+165, 71+165, 189+165, 71+165, 182+165, 145+165, 182+165, 145+165);
+        //drawCurve(g, 182+165, 145+165, 182+165, 145+165, 191+165, 141+165, 191+165, 141+165);
+        //drawCurve(g, 191+165, 141+165, 191+165, 141+165, 202+165, 68+165, 202+165, 68+165);
+        //chicken
+        drawCurve(g, 74+165, 62+165, 74+165, 62+165, 79+165, 54+165, 79+165, 54+165);
+        drawCurve(g, 79+165, 54+165, 79+165, 54+165, 82+165, 53+165, 83+165, 55+165);
+        drawCurve(g, 83+165, 55+165, 83+165, 55+165, 97+165, 45+165, 97+165, 45+165);
+        drawCurve(g, 97+165, 45+165, 92+165, 39+165, 91+165, 36+165, 97+165, 34+165);
+        drawCurve(g, 97+165, 34+165, 97+165, 34+165, 107+165, 31+165, 111+165, 23+165);
+        drawCurve(g, 111+165, 23+165, 111+165, 23+165, 129+165, 17+165, 129+165, 17+165);
+        drawCurve(g, 129+165, 17+165, 129+165, 17+165, 149+165, 25+165, 149+165 ,25+165);
+        drawCurve(g, 149+165, 25+165, 149+165 ,25+165, 150+165, 21+165, 157+165, 25+165);
+        drawCurve(g, 157+165, 25+165, 163+165, 21+165, 171+165, 21+165, 182+165, 30+165);
+        drawCurve(g, 182+165, 30+165, 187+165, 36+165, 187+165, 40+165, 183+165, 43+165);
+        drawCurve(g, 183+165, 43+165, 194+165, 42+165, 202+165, 49+165, 202+165, 62+165);
+        floodFill(g, 143+165, 82+165, Color.WHITE, KFCBuffer);
     }
 
     private void drawBabyBuffer() {
@@ -328,70 +362,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         floodFillBorder(g, 255, 232, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
         floodFillBorder(g, 305, 240, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
         isDraw = true;
-    }
-
-    private void drawBabyOutline(Graphics2D g) {
-        g.setColor(Palette.BLACK.getColor());
-        
-        //right face
-        drawCurve(g, 75+250, 60+150, 110+250, 73+150, 106+250, 113+150, 69+250, 122+150);
-
-        //left face
-        drawCurve(g, 62+250, 54+150, 40+250, 51+150, 15+250, 60+150, 4+250, 78+150);
-
-        //left eye
-        drawElipse(g, 5+250, 86+150, 4, 10);
-
-        //left face
-        drawCurve(g, 6+250, 98+150, 6+250, 98+150, 13+250, 114+150, 27+250, 118+150);
-        //bottom
-        drawCurve(g, 20+250, 136+150, 25+250, 173+150, 70+250, 173+150, 87+250, 145+150);
-        drawCurve(g, 87+250, 145+150, 87+250, 145+150, 81+250, 138+150, 81+250, 138+150);
-
-        //left feet?
-        drawCurve(g, 44+250, 164+150, 44+250, 169+150, 41+250, 172+150, 41+250, 172+150);
-        drawCurve(g, 41+250, 172+150, 26+250, 169+150, 21+250, 172+150, 18+250, 178+150);
-        drawCurve(g, 18+250, 178+150, 16+250, 184+150, 17+250, 186+150, 21+250, 187+150);
-        drawCurve(g, 21+250, 187+150, 26+250, 179+150, 33+250, 179+150, 33+250, 179+150);
-
-        drawCurve(g, 40+250, 175+150, 30+250, 177+150, 27+250, 186+150, 35+250, 193+150);
-        drawCurve(g, 35+250, 193+150, 36+250, 184+150, 38+250, 183+150, 42+250, 183+150);
-
-        drawCurve(g, 47+250, 177+150, 40+250, 180+150, 38+250, 189+150, 46+250, 195+150);
-        drawCurve(g, 46+250, 195+150, 49+250, 196+150, 50+250, 195+150, 49+250, 187+150);
-        drawCurve(g, 49+250, 187+150, 51+250, 181+150, 54+250, 179+150, 59+250, 182+150);
-        drawCurve(g, 59+250, 182+150, 62+250, 183+150, 64+250, 181+150, 62+250, 179+150);
-        drawCurve(g, 62+250, 179+150, 61+250, 175+150, 58+250, 173+150, 52+250, 174+150);
-        drawCurve(g, 52+250, 174+150, 48+250, 174+150, 47+250, 172+150, 50+250, 165+150);
-
-        //right feet?
-        drawCurve(g, 53+250, 164+150, 55+250, 165+150, 52+250, 172+150, 60+250, 172+150);
-        drawCurve(g, 58+250, 165+150, 60+250, 173+150, 60+250, 176+150, 70+250, 171+150);
-        drawCurve(g, 65+250, 164+150, 66+250, 169+150, 69+250, 171+150, 75+250, 170+150);
-        drawCurve(g, 74+250, 170+150, 80+250, 165+150, 79+250, 162+150, 76+250, 163+150);
-        drawCurve(g, 76+250, 163+150, 71+250, 163+150, 71+250, 163+150, 71+250, 161+150);
-
-        //Comb
-        drawCurve(g, 53+250, 53+150, 46+250, 42+150, 54+250, 23+150, 54+250, 23+150);
-        drawCurve(g, 54+250, 23+150, 54+250, 23+150, 61+250, 29+150, 62+250, 39+150);
-        drawCurve(g, 60+250, 46+150, 60+250, 46+150, 65+250, 17+150, 96+250, 1+150);
-        drawCurve(g, 96+250, 1+150, 101+250, 8+150, 90+250, 42+150, 90+250, 42+150);
-        drawCurve(g, 90+250, 42+150, 90+250, 42+150, 102+250, 32+150, 118+250, 30+150);
-        drawCurve(g, 118+250, 30+150, 118+250, 30+150, 109+250, 51+150, 78+250, 61+150);
-
-        //left wing?
-        drawCurve(g, 27+250, 118+150, 18+250, 118+150, 9+250, 125+150, 9+250, 125+150);
-        drawCurve(g, 9+250, 125+150, 9+250, 125+150, 15+250, 125+150, 15+250, 125+150);
-        drawCurve(g, 15+250, 125+150, 15+250, 125+150, 11+250, 131+150, 11+250, 131+150);
-        drawCurve(g, 11+250, 131+150, 11+250, 131+150, 17+250, 131+150, 17+250, 131+150);
-        drawCurve(g, 17+250, 131+150, 17+250, 131+150, 15+250, 138+150, 15+250, 138+150);
-        drawCurve(g, 15+250, 138+150, 15+250, 138+150, 21+250, 136+150, 21+250, 136+150);
-
-        //right wing?
-        drawCurve(g, 81+250, 138+150, 81+250, 138+150, 89+250, 137+150, 89+250, 137+150);
-        drawCurve(g, 89+250, 137+150, 89+250, 137+150, 83+250, 128+150, 83+250, 128+150);
-        drawCurve(g, 83+250, 128+150, 83+250, 128+150, 87+250, 125+150, 87+250, 125+150);
-        drawCurve(g, 87+250, 125+150, 87+250, 125+150, 76+250, 120+150, 76+250, 120+150);
     }
 
     private void initializePillar() {
@@ -520,8 +490,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        paintImage();
         Graphics2D g2 = (Graphics2D) g;
+        AffineTransform originalTransform = g2.getTransform();
+        paintImage();
         g2.drawImage(mainBuffer, 0, 0, this);
 
         //babyBuffer
@@ -529,18 +500,20 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             whitenChicken();
         }
         int chickenTranslate = (int) chickenMove;
-        g2.translate(300, 280 );
+        g2.translate(300, 280);
         g2.scale(chickenScale, chickenScale);
-        g2.translate(-300, -280 );
+        g2.translate(-300, -280);
 
-        g2.translate(0, chickenTranslate );
+        g2.translate(0, chickenTranslate);
         g2.drawImage(babyBuffer, 0, 0, this);
-        //g2.scale(chickenScale, chickenScale);
-        //g2.translate(0,-chickenTranslate );
 
-        // g2.translate(175,  150 );
-        // g2.drawImage(KFCBuffer, 0, 0, this);
-        // g2.translate(-175,  -150 );
+        g2.setTransform(originalTransform);
+
+        g2.translate(300, 280);
+        g2.scale(KFCScale, KFCScale);
+        g2.translate(-300, -280);
+
+        g2.drawImage(KFCBuffer, 0, 0, this);
     }
 
     private void whitenChicken() {
@@ -646,13 +619,25 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     private void drawText(Graphics2D g) {
         String text1 = "";
         String text2 = "";
-        for (int i = 0; i < letter1 && i < line1Text.length(); i++) 
-            text1 += line1Text.charAt(i);
-        for (int i = 0; i < letter2 && i < line2Text.length(); i++){
-            if(line2Text.charAt(i) == ' ')
-                text2 += line2Text.charAt(i);
-            text2 += line2Text.charAt(i);
+        if(letter2 >= line2Text.length()){
+            for (int i = 0; i < letter3 && i < line3Text.length(); i++) 
+                text1 += line3Text.charAt(i);
+            for (int i = 0; i < letter4 && i < line4Text.length(); i++){
+                if(line4Text.charAt(i) == ' ')
+                    text2 += line4Text.charAt(i);
+                text2 += line4Text.charAt(i);
+            }
         }
+        else{
+            for (int i = 0; i < letter1 && i < line1Text.length(); i++) 
+                text1 += line1Text.charAt(i);
+            for (int i = 0; i < letter2 && i < line2Text.length(); i++){
+                if(line2Text.charAt(i) == ' ')
+                    text2 += line2Text.charAt(i);
+                text2 += line2Text.charAt(i);
+            }
+        }
+        
         g.setFont(font);
 
         //draw Shadow of Text
