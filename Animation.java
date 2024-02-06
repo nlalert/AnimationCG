@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -60,16 +61,27 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     String line2Text = "Baby Chicken is evolving!";
     
     double tranparency = 0;
+    double transition = 0;
 
     int pillarLayers = 10;
     int pillarBalls = 4;
-    int midpointX = 300;
-    int midpointY = 360;
+    int pillarMidpointX = 300;
+    int pillarMidpointY = 360;
+    int pillarEndpointY = 0;
     double[][] pillarSize = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
     char[][] pillarDirection = new char[pillarLayers][pillarBalls];
-    double transition = 0;
+
+    int domeLayers = 6;
+    int domeBalls = 8;
+    int domeMidpointX = 300;
+    int domeMidpointY = 75;
+    int domeEndpointY = 360;
+    double[][] domeSize = new double[domeLayers][domeBalls];
+    double[][] domePositionX = new double[domeLayers][domeBalls];
+    double[][] domePositionY = new double[domeLayers][domeBalls+1];
+
     double chickenMove = 0;
     double chickenVelocity = -100;
 
@@ -82,6 +94,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         double letterVelocity = 10;
 
         initializePillar();
+        initializeDome();
         drawBabyBuffer();
         
         startTime = lastTime;
@@ -122,11 +135,16 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
-            }//6.5 to 999999999999999999999999999999999999999999
-            else if(timer <= 999999999 && timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){ //Moving each balls in the layer of the pillar
+            }//6.5 - 99999999 second
+            else if(timer <= 9999999 && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the pillar
                 currentStage = Stage.Evolve;
-                updatePillar();
-            }   
+                if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY){ //Moving each balls in the layer of the pillar
+                    updatePillar();
+                }
+                else if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
+                    updateDome();
+                }
+            }
         
             //Display
             repaint();
@@ -271,7 +289,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         //Set a vertical position of each layer of the pillar
         int layerGaps = 0;
         for (double[] py : pillarPositionY) {
-            py[4] = 360 + layerGaps;
+            py[pillarBalls] = pillarMidpointY + layerGaps;
             layerGaps += 2;
         }
 
@@ -284,6 +302,16 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    private void initializeDome() {
+
+        //Set a vertical position of each layer of the dome
+        int layerGaps = 0;
+        for (double[] py : domePositionY) {
+            py[domeBalls] = domeMidpointY - layerGaps;
+            layerGaps += 40;
+        }
+    }
+
     private void updateTransparency(double elapsedTime) {
         transition += 300 * elapsedTime / 1000.0;
         if((int)transition % 36 == 3){
@@ -292,81 +320,80 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     private void updatePillar() {
-        int baseSize = 12;
+        int baseSize = 8;
+        int finalSize = 3;
         int layerHeight = 40;
         int baseLength = 300;
-        int finalLength = 100;
+        int finalLength = 75;
 
-        double veticalSpeed = 0.000006;
+        double veticalSpeed = 0.000005;
         double horizontalSpeed = 0.0002;
         double verticalVelocity = 60;
 
         for (int i = 0; i < pillarLayers; i++) {  
                                     
-            double heightRatio = ((midpointY - pillarPositionY[i][4]) / midpointY);
+            double heightRatio = ((pillarMidpointY - pillarPositionY[i][pillarBalls]) / pillarMidpointX);
             
-            double currentSize = baseSize - heightRatio * baseSize;
+            double currentSize = baseSize - heightRatio * (baseSize - finalSize);
             double currentVerlocity =  veticalSpeed * (heightRatio * verticalVelocity);
 
-            double leftBorder = (midpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
-            double rightBorder = (midpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
+            if (heightRatio > 0){
+                pillarPositionY[i][pillarBalls] -= veticalSpeed + currentVerlocity;
+            }
+            else{
+                pillarPositionY[i][pillarBalls] -= veticalSpeed;
+            }
+
+            double leftBorder = (pillarMidpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
+            double rightBorder = (pillarMidpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
             double layerLength = (rightBorder - leftBorder);
 
             double a = layerLength / 2;
             double b = layerHeight / 2;
 
-            for (int j = 0; j < pillarBalls+1; j++) {
-               
-                if (j == 0){
-                    if (heightRatio > 0){
-                        pillarPositionY[i][4] -= veticalSpeed + currentVerlocity;
+            for (int j = 0; j < pillarBalls; j++) {                          
+                    
+                if(pillarPositionY[i][pillarBalls] <= pillarMidpointY){ 
+                    
+                    if(pillarPositionX[i][j] <= leftBorder){
+                        pillarDirection[i][j] = 'R';
                     }
-                    else{
-                        pillarPositionY[i][4] -= veticalSpeed;
+                    
+                    else if(pillarPositionX[i][j] >= rightBorder){
+                        pillarDirection[i][j] = 'L';
                     }
-                }                             
+                    
+                    if (pillarDirection[i][j] == 'L'){
+                        pillarPositionX[i][j] -= horizontalSpeed;
+                    }
+                    
+                    else if (pillarDirection[i][j] == 'R'){
+                        pillarPositionX[i][j] += horizontalSpeed;
+                    }
+                    
+                }
                 
-                if (j < 4){
-                    
-                    if(pillarPositionY[i][4] <= midpointY){ 
-                        
-                        if(pillarPositionX[i][j] <= leftBorder){
-                            pillarDirection[i][j] = 'R';
-                        }
-                        
-                        else if(pillarPositionX[i][j] >= rightBorder){
-                            pillarDirection[i][j] = 'L';
-                        }
-                        
-                        if (pillarDirection[i][j] == 'L'){
-                            pillarPositionX[i][j] -= horizontalSpeed;
-                        }
-                        
-                        else if (pillarDirection[i][j] == 'R'){
-                            pillarPositionX[i][j] += horizontalSpeed;
-                        }
-                        
-                    }
-                    
-                    pillarSize[i][j] = currentSize;
-                    double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - midpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
+                pillarSize[i][j] = currentSize;
+                double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - pillarMidpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
 
-                    if (pillarDirection[i][j] == 'R') {
-                        if (pillarPositionX[i][j] - leftBorder <= layerLength / 3 * 2 && pillarPositionX[i][j] - leftBorder >= layerLength / 3){
-                            pillarSize[i][j] -= 3;
-                        }
-                        else{
-                            pillarSize[i][j] -= 2;
-                        }
-                        pillarPositionY[i][j] = (pillarPositionY[i][4] - b) - currentPositionY;  
-                    }
+                if (pillarDirection[i][j] == 'R'){
 
+                    if (pillarPositionX[i][j] - leftBorder <= layerLength / 3 * 2 && pillarPositionX[i][j] - leftBorder >= layerLength / 3){
+                        pillarSize[i][j] -= 3;
+                    }
                     else{
-                        if (pillarPositionX[i][j] - leftBorder <= layerLength / 3 * 2 && pillarPositionX[i][j] - leftBorder >= layerLength / 3){
-                            pillarSize[i][j] -= 1;
-                        }
-                        pillarPositionY[i][j] = (pillarPositionY[i][4] - b) + currentPositionY; 
+                        pillarSize[i][j] -= 2;
                     }
+                    pillarPositionY[i][j] = (pillarPositionY[i][pillarBalls]) - currentPositionY; 
+
+                }
+
+                else{
+
+                    if (pillarPositionX[i][j] - leftBorder > layerLength / 3 * 2 || pillarPositionX[i][j] - leftBorder < layerLength / 3){
+                        pillarSize[i][j] -= 1;
+                    }
+                    pillarPositionY[i][j] = (pillarPositionY[i][pillarBalls]) + currentPositionY; 
 
                 }
 
@@ -375,7 +402,55 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    private void updateDome(){
 
+        int baseSize = 8;
+        int layerHeight = 40;
+        int baseLength = 50;
+        int finalLength = 300;
+
+        double domeHeight = domeEndpointY - domeMidpointY;
+        double domeLenght = (finalLength - baseLength) / 2;
+        double veticalSpeed = 0.05;
+        
+        for (int i = 0; i < domeLayers; i++) {
+
+            domePositionY[i][domeBalls] += veticalSpeed;
+
+            double layerHalfLength;
+
+                if(domeHeight > domeLenght){
+                    layerHalfLength = (Math.sqrt(((domeHeight*domeHeight) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeLenght*domeLenght) / (domeHeight*domeHeight)));
+                } //(a^2-(x-h)^2)(b^2)/(a^2)
+                else {
+                    layerHalfLength = (Math.sqrt(((domeLenght*domeLenght) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeHeight*domeHeight) / (domeLenght*domeLenght)));
+                } //(b^2-(x-h)^2)(a^2)/(b^2)
+
+            double leftBorder = domeMidpointX - layerHalfLength;
+            double layerLength = layerHalfLength * 2;
+            double a = layerHalfLength;
+            double b = layerHeight / 2;
+
+            for (int j = 0; j < domeBalls; j++) {
+
+                domeSize[i][j] = baseSize;
+
+                domePositionX[i][j] = (((double)j/(domeBalls-1)) * (layerLength)) + leftBorder;
+
+                if(j < (domeBalls + 1) / 2) {
+                    double currentPositionY = (Math.sqrt(((a*a) - Math.pow(domePositionX[i][j] - domeMidpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
+                    domePositionY[i][j] = (domePositionY[i][domeBalls]) + currentPositionY;
+                    domePositionY[i][domeBalls-(j+1)] = domePositionY[i][j];
+                }
+                
+                if (domePositionX[i][j] - leftBorder > layerLength / 3 * 2 || domePositionX[i][j] - leftBorder < layerLength / 3){
+                    domeSize[i][j] -= 1;
+                }
+
+            }
+             
+        }
+    }
 
     //=============================================================================================================
     //=============================================================================================================
@@ -494,8 +569,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
     
     private void drawEffect(Graphics2D g) {    
-        if(pillarPositionY[pillarLayers-1][pillarBalls] >= 0 && pillarPositionY[0][4] < midpointY){
+        if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY && pillarPositionY[0][pillarBalls] < pillarMidpointY){
             drawPillar(g);
+        }
+        if(domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && domePositionY[0][domeBalls] > domeMidpointY){
+            drawDome(g);
         }
     }
 
@@ -503,10 +581,24 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < pillarLayers; i++) {   
             for (int j = 0; j < pillarBalls; j++) {
-                if (pillarPositionY[i][4] < midpointY){
+                if (pillarPositionY[i][pillarBalls] < pillarMidpointY && pillarPositionY[i][pillarBalls] >= pillarEndpointY){
                     drawCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
                     if ((int)pillarSize[i][j] > 1) {   
                         floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                    }
+                }
+            }
+        }
+    }
+
+    private void drawDome(Graphics2D g) {
+        g.setColor(new Color(255,255,255));
+        for (int i = 0; i < domeLayers; i++) {   
+            for (int j = 0; j < domeBalls; j++) {
+                if (domePositionY[i][domeBalls] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
+                    drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
+                    if ((int)domeSize[i][j] > 1) {   
+                        //floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
                     }
                 }
             }
