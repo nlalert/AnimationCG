@@ -17,15 +17,19 @@ import javax.swing.JPanel;
 
 public class Animation extends JPanel implements Runnable,MouseListener{
 
-    static Font font;
-    private static BufferedImage buffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private static BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private Stage currentStage = Stage.Show;
-    boolean isDraw = false;
-    boolean isText = true;
-    Animation(){
+    public Animation(){
         addMouseListener(this);
     }
+
+    //Main variable
+    static Font font;
+    private BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    private BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    private BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    private Stage currentStage = Stage.Show;
+    private boolean isDraw = false;
+    private boolean isText = true;
+    private double whitenOpacity = 20;
 
     public static void main(String[] args) {
         try {
@@ -72,7 +76,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     double transition = 0;
     double chickenMove = 0;
     double chickenVelocity = -100;
+    double timer = 0;
 
+    // =============================================================================
+    // =============================================================================
+    //                             Animation Thread
+    // =============================================================================
+    // =============================================================================
 
     //start animation
     @Override
@@ -91,7 +101,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             elapsedTime = currentTime - lastTime;
             lastTime = currentTime;
             
-            double timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
+            timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
 
             //0 - 3 second
             if(timer <= 3){
@@ -125,6 +135,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             }//6.5 to 999999999999999999999999999999999999999999
             else if(timer <= 999999999 && timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){//dark screen transition at the 4th second
                 currentStage = Stage.Evolve;
+                whitenOpacity += 100 * elapsedTime / 1000.0;
                 updatePillar();
             }   
         
@@ -135,11 +146,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBabyBuffer() {
         Graphics2D g = babyBuffer.createGraphics();
-        //g.scale(2, 2);
-        //right face
+        
         g.setColor(new Color(111,111,111,1));
         g.fillRect(0, 0, 600, 600);
         
+        //right face
         g.setColor(Palette.BLACK.getColor());
         drawCurve(g, 62+250, 54+150, 62+250, 54+150, 65+250, 43+150, 73+250, 39+150);
         drawCurve(g, 73+250, 39+150, 73+250, 39+150, 75+250, 42+150, 71+250, 55+150);
@@ -167,7 +178,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawCurve(g, 37+250, 102+150, 36+250, 98+150, 27+250, 97+150, 25+250, 93+150);
         drawCurve(g, 25+250, 93+150, 23+250, 90+150, 19+250, 90+150, 16+250, 93+150);
         drawCurve(g, 16+250, 93+150, 11+250, 95+150, 8+250, 98+150, 10+250, 101+150);
-        g.setColor(Palette.HARDPART_OUTLINE.getColor());
+        g.setColor(Palette.BLACK.getColor());
         //left feet?
         drawCurve(g, 44+250, 164+150, 44+250, 169+150, 41+250, 172+150, 41+250, 172+150);
         drawCurve(g, 41+250, 172+150, 26+250, 169+150, 21+250, 172+150, 18+250, 178+150);
@@ -190,7 +201,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawCurve(g, 74+250, 170+150, 80+250, 165+150, 79+250, 162+150, 76+250, 163+150);
         drawCurve(g, 76+250, 163+150, 71+250, 163+150, 71+250, 163+150, 71+250, 161+150);
 
-        g.setColor(Palette.FEATHER_OUTLINE.getColor());
+        g.setColor(Palette.BLACK.getColor());
         //Comb
         drawCurve(g, 53+250, 53+150, 46+250, 42+150, 54+250, 23+150, 54+250, 23+150);
         drawCurve(g, 54+250, 23+150, 54+250, 23+150, 61+250, 29+150, 62+250, 39+150);
@@ -256,6 +267,70 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         floodFillBorder(g, 255, 232, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
         floodFillBorder(g, 305, 240, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
         isDraw = true;
+    }
+
+    private void drawBabyOutline(Graphics2D g) {
+        g.setColor(Palette.BLACK.getColor());
+        
+        //right face
+        drawCurve(g, 75+250, 60+150, 110+250, 73+150, 106+250, 113+150, 69+250, 122+150);
+
+        //left face
+        drawCurve(g, 62+250, 54+150, 40+250, 51+150, 15+250, 60+150, 4+250, 78+150);
+
+        //left eye
+        drawElipse(g, 5+250, 86+150, 4, 10);
+
+        //left face
+        drawCurve(g, 6+250, 98+150, 6+250, 98+150, 13+250, 114+150, 27+250, 118+150);
+        //bottom
+        drawCurve(g, 20+250, 136+150, 25+250, 173+150, 70+250, 173+150, 87+250, 145+150);
+        drawCurve(g, 87+250, 145+150, 87+250, 145+150, 81+250, 138+150, 81+250, 138+150);
+
+        //left feet?
+        drawCurve(g, 44+250, 164+150, 44+250, 169+150, 41+250, 172+150, 41+250, 172+150);
+        drawCurve(g, 41+250, 172+150, 26+250, 169+150, 21+250, 172+150, 18+250, 178+150);
+        drawCurve(g, 18+250, 178+150, 16+250, 184+150, 17+250, 186+150, 21+250, 187+150);
+        drawCurve(g, 21+250, 187+150, 26+250, 179+150, 33+250, 179+150, 33+250, 179+150);
+
+        drawCurve(g, 40+250, 175+150, 30+250, 177+150, 27+250, 186+150, 35+250, 193+150);
+        drawCurve(g, 35+250, 193+150, 36+250, 184+150, 38+250, 183+150, 42+250, 183+150);
+
+        drawCurve(g, 47+250, 177+150, 40+250, 180+150, 38+250, 189+150, 46+250, 195+150);
+        drawCurve(g, 46+250, 195+150, 49+250, 196+150, 50+250, 195+150, 49+250, 187+150);
+        drawCurve(g, 49+250, 187+150, 51+250, 181+150, 54+250, 179+150, 59+250, 182+150);
+        drawCurve(g, 59+250, 182+150, 62+250, 183+150, 64+250, 181+150, 62+250, 179+150);
+        drawCurve(g, 62+250, 179+150, 61+250, 175+150, 58+250, 173+150, 52+250, 174+150);
+        drawCurve(g, 52+250, 174+150, 48+250, 174+150, 47+250, 172+150, 50+250, 165+150);
+
+        //right feet?
+        drawCurve(g, 53+250, 164+150, 55+250, 165+150, 52+250, 172+150, 60+250, 172+150);
+        drawCurve(g, 58+250, 165+150, 60+250, 173+150, 60+250, 176+150, 70+250, 171+150);
+        drawCurve(g, 65+250, 164+150, 66+250, 169+150, 69+250, 171+150, 75+250, 170+150);
+        drawCurve(g, 74+250, 170+150, 80+250, 165+150, 79+250, 162+150, 76+250, 163+150);
+        drawCurve(g, 76+250, 163+150, 71+250, 163+150, 71+250, 163+150, 71+250, 161+150);
+
+        //Comb
+        drawCurve(g, 53+250, 53+150, 46+250, 42+150, 54+250, 23+150, 54+250, 23+150);
+        drawCurve(g, 54+250, 23+150, 54+250, 23+150, 61+250, 29+150, 62+250, 39+150);
+        drawCurve(g, 60+250, 46+150, 60+250, 46+150, 65+250, 17+150, 96+250, 1+150);
+        drawCurve(g, 96+250, 1+150, 101+250, 8+150, 90+250, 42+150, 90+250, 42+150);
+        drawCurve(g, 90+250, 42+150, 90+250, 42+150, 102+250, 32+150, 118+250, 30+150);
+        drawCurve(g, 118+250, 30+150, 118+250, 30+150, 109+250, 51+150, 78+250, 61+150);
+
+        //left wing?
+        drawCurve(g, 27+250, 118+150, 18+250, 118+150, 9+250, 125+150, 9+250, 125+150);
+        drawCurve(g, 9+250, 125+150, 9+250, 125+150, 15+250, 125+150, 15+250, 125+150);
+        drawCurve(g, 15+250, 125+150, 15+250, 125+150, 11+250, 131+150, 11+250, 131+150);
+        drawCurve(g, 11+250, 131+150, 11+250, 131+150, 17+250, 131+150, 17+250, 131+150);
+        drawCurve(g, 17+250, 131+150, 17+250, 131+150, 15+250, 138+150, 15+250, 138+150);
+        drawCurve(g, 15+250, 138+150, 15+250, 138+150, 21+250, 136+150, 21+250, 136+150);
+
+        //right wing?
+        drawCurve(g, 81+250, 138+150, 81+250, 138+150, 89+250, 137+150, 89+250, 137+150);
+        drawCurve(g, 89+250, 137+150, 89+250, 137+150, 83+250, 128+150, 83+250, 128+150);
+        drawCurve(g, 83+250, 128+150, 83+250, 128+150, 87+250, 125+150, 87+250, 125+150);
+        drawCurve(g, 87+250, 125+150, 87+250, 125+150, 76+250, 120+150, 76+250, 120+150);
     }
 
     private void initializePillar() {
@@ -386,17 +461,52 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         super.paintComponent(g);
         paintImage();
         Graphics2D g2 = (Graphics2D) g;
-        g2.drawImage(buffer, 0, 0, this);
+        g2.drawImage(mainBuffer, 0, 0, this);
 
         //babyBuffer
-        g2.translate(0, (int)chickenMove);
+        if(currentStage == Stage.Evolve){
+            whitenChicken();
+        }
+        g2.translate(0, (int) chickenMove);
         g2.drawImage(babyBuffer, 0, 0, this);
         g2.translate(0, (int)-chickenMove);
     }
+
+    private void whitenChicken() {
+        Graphics2D g = babyBuffer.createGraphics();
+        Color currentColor = new Color(babyBuffer.getRGB(306, 249));
+        int red = currentColor.getRed();
+        int green = currentColor.getGreen();
+        int blue = currentColor.getBlue();
+        System.out.println(red);
+        System.out.println(green);
+        System.out.println(blue);
+        if(red < 250 && green < 250 && blue < 250){
+            Color color = new Color(255,255,255, (int) whitenOpacity);
+            floodFill(g, 331, 177, color, babyBuffer);
+            floodFill(g, 309, 220, color, babyBuffer);
+            floodFill(g, 271, 248, color, babyBuffer);
     
+            floodFill(g, 294, 325, color, babyBuffer);
+            floodFill(g, 306, 318, color, babyBuffer);
+            floodFill(g, 312, 317, color, babyBuffer);
+            floodFill(g, 321, 316, color, babyBuffer);
+            
+            floodFill(g, 304, 250, color, babyBuffer);
+            floodFill(g, 255, 241, color, babyBuffer);
+    
+            floodFill(g, 273, 277, color, babyBuffer);
+            floodFill(g, 322, 284, color, babyBuffer);
+            floodFill(g, 309, 237, color, babyBuffer);
+            floodFill(g, 323, 293, color, babyBuffer);
+            floodFill(g, 307, 203, color, babyBuffer);
+            floodFill(g, 299, 338, color, babyBuffer);
+        }
+    }
+
     //paint entire image on buffer
     private void paintImage() {
-        Graphics2D g = buffer.createGraphics();
+        Graphics2D g = mainBuffer.createGraphics();
         if(currentStage != Stage.Text && !isDraw)
             drawBackground(g);
         if(currentStage == Stage.Evolve)
@@ -406,8 +516,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             drawTextbox(g);
             drawText(g);
         }
-        // if(currentStage == Stage.Show && !isDraw)
-        //     drawBaby(g);
         if(currentStage == Stage.KFC)
             drawKFC(g);
     }
@@ -482,7 +590,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.drawString(text2, 38, 564);
 
         //draw Real Text for reading
-        g.setColor(new Color(200, 194, 205));
+        g.setColor(new Color(220, 214, 225));
         g.drawString(text1, 35, 510);
         g.drawString(text2, 35, 560);
     }
@@ -500,7 +608,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 if (pillarPositionY[i][4] < midpointY){
                     drawCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
                     if ((int)pillarSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                        floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
                     }
                 }
             }
@@ -557,9 +665,34 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     //=============================================================================================================
     //=============================================================================================================
 
+    private void floodFill(Graphics g, int x, int y, Color fillColor, BufferedImage buffer) {
+        int targetRGB = buffer.getRGB(x, y);
+        if (buffer.getRGB(x, y) == targetRGB) {
+            Queue<Point> queue = new LinkedList<>();
+            queue.add(new Point(x, y));
+
+            while (!queue.isEmpty()) {
+                Point point = queue.poll();
+                x = (int) point.getX();
+                y = (int) point.getY();
+
+                if (buffer.getRGB(x, y) == targetRGB) {
+                    g.setColor(fillColor);
+                    plot(g, x, y);
+
+                    // Enqueue adjacent pixels
+                    if (x - 1 >= 0) queue.add(new Point(x - 1, y));
+                    if (x + 1 < 600) queue.add(new Point(x + 1, y));
+                    if (y - 1 >= 0) queue.add(new Point(x, y - 1));
+                    if (y + 1 < 600) queue.add(new Point(x, y + 1));
+                }
+            }
+        }
+    }
+
 
     //floodfill area seed at x,y to fill targetColor nearby with fillColor
-    private void floodFill(Graphics g, int x, int y, Color targetColor, Color fillColor) {
+    private void floodFill(Graphics g, int x, int y, Color targetColor, Color fillColor, BufferedImage buffer) {
         int targetRGB = 0;
         if(targetColor != null){
             targetRGB = targetColor.getRGB();
@@ -843,6 +976,7 @@ enum Palette {
     //HEX Color Code without prefix "#" only number and letter
     BLACK("09040b"),
     BODY("f1a044"),
+    BODY_OULINE("000000"),
     HARDPART("f5e997"),
     HARDPART_OUTLINE("09040b"),
     FEATHER("fad457"),
