@@ -102,11 +102,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Text;
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }//5.5 - 6.5 second
-            else if(timer <= 6.5 && tranparency < 255){//dark screen transition at the 4th second  
+            else if(timer <= 6.5 && tranparency < 255){ //dark screen transition 
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 to 999999999999999999999999999999999999999999
-            else if(timer <= 999999999 && timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){//dark screen transition at the 4th second
+            else if(timer <= 999999999 && timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){ //Moving each balls in the layer of the pillar
                 currentStage = Stage.Evolve;
                 updatePillar();
             }   
