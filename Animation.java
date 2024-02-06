@@ -76,6 +76,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     double transition = 0;
     double chickenMove = 0;
     double chickenVelocity = -100;
+    double chickenScale = 1;
+    double chickenScaleVelocity = 1;
+    double chickenScaleAccelerate = 0.7;
     double timer = 0;
 
     // =============================================================================
@@ -93,6 +96,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         initializePillar();
         drawBabyBuffer();
+        drawWhiteKFC();
         
         startTime = lastTime;
         while (true) {
@@ -118,7 +122,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     chickenMove = -30;
                     chickenVelocity = -chickenVelocity;
                 }
-
             }//0 - 3.416 second
             else if(timer <= 6 + 5/letterVelocity){
                 currentStage = Stage.Text;
@@ -133,21 +136,79 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 to 999999999999999999999999999999999999999999
-            else if(timer <= 999999999 && timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){//dark screen transition at the 4th second
+            else if(timer <= 15){//dark screen transition at the 4th second
+                if(timer * 1000 % 1 == 0 && pillarPositionY[pillarLayers-1][pillarBalls] >= 0){
+                    updatePillar();
+                }
                 currentStage = Stage.Evolve;
                 whitenOpacity += 100 * elapsedTime / 1000.0;
-                updatePillar();
-            }   
+            }
+            else if(timer <= 25 || chickenScale <= 0.8){
+                currentStage = Stage.Evolve;
+                chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
+                chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
+                if(chickenScale >= 1){
+                    chickenScale = 1;
+                    chickenScaleVelocity = -chickenScaleVelocity;
+                    chickenScaleAccelerate = -chickenScaleAccelerate;
+                }
+                else if(chickenScale <= 0.0000000000000000000001){
+                    chickenScale = 0.0000000000000000000001;
+                    chickenScaleVelocity = -chickenScaleVelocity;
+                    chickenScaleAccelerate = -chickenScaleAccelerate;
+                }
+            }
         
             //Display
             repaint();
         }
     }
 
+    private void drawWhiteKFC() {
+        Graphics2D g = KFCBuffer.createGraphics();
+        
+        g.setColor(new Color(255,255,255,1));
+        g.fillRect(0, 0, 600, 600);
+        g.setColor(Palette.BLACK.getColor());
+        //left
+        drawCurve(g, 75, 67, 75, 67, 90, 168, 90, 168);
+        //bottom
+        drawCurve(g, 90, 168, 122, 181, 159, 181, 190, 168);
+        //right
+        drawCurve(g, 190, 168, 190, 168, 205, 67, 205, 67);
+        //rim
+        drawCurve(g, 71, 65, 100, 78, 178, 78, 208, 65);
+        drawCurve(g, 71, 62, 100, 75, 178, 75, 208, 62);
+        //red bar 1
+        drawCurve(g, 82, 71, 82, 71, 92, 144, 92, 144);
+        drawCurve(g, 92, 144, 92, 144, 105, 148, 105, 148);
+        drawCurve(g, 105, 148, 105, 148, 97, 73, 97, 73);
+        //red bar 2
+        drawCurve(g, 189, 71, 189, 71, 182, 145, 182, 145);
+        drawCurve(g, 182, 145, 182, 145, 191, 141, 191, 141);
+        drawCurve(g, 191, 141, 191, 141, 202, 68, 202, 68);
+        
+
+        // //left side
+        // drawCurve(g, 220, 245, 220, 245, 240, 360, 240, 360);
+        // //bottom
+        // drawCurve(g, 240, 360, 265, 370, 345, 370, 360, 360);
+        // //right side
+        // drawCurve(g, 380, 245, 380, 245, 360, 360, 360, 360);
+        // //top
+        // drawCurve(g, 220, 245, 260, 255, 340, 255, 380, 245);
+        // //chicken
+        // drawCurve(g, 220, 245, 218, 226, 236, 215, 251, 223);
+        // drawCurve(g, 251, 223, 263, 228, 265, 249, 265, 249);
+        //drawCurve(g, 265, 249, 263, 259, 267, 264, 275, 267);
+        //drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
+        //drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
+    }
+
     private void drawBabyBuffer() {
         Graphics2D g = babyBuffer.createGraphics();
         
-        g.setColor(new Color(111,111,111,1));
+        g.setColor(new Color(255,255,255,1));
         g.fillRect(0, 0, 600, 600);
         
         //right face
@@ -467,9 +528,19 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(currentStage == Stage.Evolve){
             whitenChicken();
         }
-        g2.translate(0, (int) chickenMove);
+        int chickenTranslate = (int) chickenMove;
+        g2.translate(300, 280 );
+        g2.scale(chickenScale, chickenScale);
+        g2.translate(-300, -280 );
+
+        g2.translate(0, chickenTranslate );
         g2.drawImage(babyBuffer, 0, 0, this);
-        g2.translate(0, (int)-chickenMove);
+        //g2.scale(chickenScale, chickenScale);
+        //g2.translate(0,-chickenTranslate );
+
+        // g2.translate(175,  150 );
+        // g2.drawImage(KFCBuffer, 0, 0, this);
+        // g2.translate(-175,  -150 );
     }
 
     private void whitenChicken() {
@@ -478,10 +549,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         int red = currentColor.getRed();
         int green = currentColor.getGreen();
         int blue = currentColor.getBlue();
-        System.out.println(red);
-        System.out.println(green);
-        System.out.println(blue);
-        if(red < 250 && green < 250 && blue < 250){
+        // System.out.println(red);
+        // System.out.println(green);
+        // System.out.println(blue);
+        if(red < 248 && green < 248 && blue < 248){
             Color color = new Color(255,255,255, (int) whitenOpacity);
             floodFill(g, 331, 177, color, babyBuffer);
             floodFill(g, 309, 220, color, babyBuffer);
@@ -516,8 +587,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             drawTextbox(g);
             drawText(g);
         }
-        if(currentStage == Stage.KFC)
-            drawKFC(g);
+        // if(currentStage == Stage.KFC)
+        //     drawKFC(g);
     }
 
     private void drawBackground(Graphics2D g) {
@@ -615,47 +686,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
-    private void drawBaby(Graphics2D g) {
-        
-    }
-
-    private void drawKFC(Graphics2D g) {
-        //หงอน
-        g.setColor(Color.BLACK);
-        // //left side
-        // drawCurve(g, 220, 245, 220, 245, 240, 360, 240, 360);
-        // //bottom
-        // drawCurve(g, 240, 360, 265, 370, 345, 370, 360, 360);
-        // //right side
-        // drawCurve(g, 380, 245, 380, 245, 360, 360, 360, 360);
-        // //top
-        // drawCurve(g, 220, 245, 260, 255, 340, 255, 380, 245);
-        // //chicken
-        // drawCurve(g, 220, 245, 218, 226, 236, 215, 251, 223);
-        // drawCurve(g, 251, 223, 263, 228, 265, 249, 265, 249);
-        // drawCurve(g, 265, 249, 263, 259, 267, 264, 275, 267);
-        // drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
-        // drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
-        // drawCurve(g, 54, 23, 54, 23, 61, 29, 62, 39);
-        // drawCurve(g, 60, 46, 60, 46, 65, 17, 96, 1);
-        // drawCurve(g, 96, 1, 101, 8, 90, 42, 90, 42);
-        // drawCurve(g, 90, 42, 90, 42, 102, 32, 118, 30);
-        // drawCurve(g, 118, 30, 118, 30, 109, 51, 78, 61);
-        // //right face
-        // g.setColor(Color.yellow.darker());
-        // drawCurve(g, 62, 54, 62, 54, 65, 43, 73, 39);
-        // drawCurve(g, 73, 39, 73, 39, 75, 42, 71, 55);
-        // drawCurve(g, 71, 55, 71, 55, 75, 52, 78, 53);
-        // drawCurve(g, 78, 53, 78, 53, 78, 55, 75, 60);
-        // drawCurve(g, 75, 60, 110, 73, 106, 113, 69, 122);
-        // drawLine(g, 99, 0 ,99, 200);
-        // //left face
-        // drawCurve(g, 62, 54, 40, 51, 15, 60, 4, 81);
-        //     //left eye
-        // midpointElispe(g, 5, 85, 3, 4);
-        // drawLine(g, 4, 68 ,46, 48);
-    }
-    
 
     //=============================================================================================================
     //=============================================================================================================
