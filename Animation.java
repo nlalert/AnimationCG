@@ -404,14 +404,14 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void updateDome(){
 
-        int baseSize = 8;
+        int baseSize = 5;
         int layerHeight = 40;
         int baseLength = 50;
         int finalLength = 300;
 
         double domeHeight = domeEndpointY - domeMidpointY;
         double domeLenght = (finalLength - baseLength) / 2;
-        double veticalSpeed = 0.05;
+        double veticalSpeed = 0.000075;
         
         for (int i = 0; i < domeLayers; i++) {
 
@@ -448,7 +448,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
 
             }
-             
+
         }
     }
 
