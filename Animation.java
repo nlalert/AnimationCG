@@ -9,7 +9,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -67,7 +66,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     int pillarBalls = 4;
     int pillarMidpointX = 300;
     int pillarMidpointY = 360;
-    int pillarEndpointY = 0;
+    int pillarEndpointY = 1;
     double[][] pillarSize = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
@@ -76,7 +75,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     int domeLayers = 6;
     int domeBalls = 8;
     int domeMidpointX = 300;
-    int domeMidpointY = 75;
+    int domeMidpointY = 1;
     int domeEndpointY = 360;
     double[][] domeSize = new double[domeLayers][domeBalls];
     double[][] domePositionX = new double[domeLayers][domeBalls];
@@ -308,7 +307,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         int layerGaps = 0;
         for (double[] py : domePositionY) {
             py[domeBalls] = domeMidpointY - layerGaps;
-            layerGaps += 40;
+            layerGaps += 30;
         }
     }
 
@@ -406,12 +405,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         int baseSize = 5;
         int layerHeight = 40;
-        int baseLength = 50;
+        int baseLength = 75;
         int finalLength = 300;
 
         double domeHeight = domeEndpointY - domeMidpointY;
         double domeLenght = (finalLength - baseLength) / 2;
-        double veticalSpeed = 0.000075;
+        double veticalSpeed = 0.0001;
         
         for (int i = 0; i < domeLayers; i++) {
 
@@ -598,7 +597,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 if (domePositionY[i][domeBalls] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
                     drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
                     if ((int)domeSize[i][j] > 1) {   
-                        //floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
                     }
                 }
             }
