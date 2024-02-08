@@ -166,8 +166,46 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 else if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
                     updateDome();
                 }
+                whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-        
+            else if(timer <= 25 || chickenScale > 0.1){
+                currentStage = Stage.Evolve;
+                chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
+                chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
+                if(chickenScale >= 1){
+                    chickenScale = 1;
+                    chickenScaleVelocity = -chickenScaleVelocity;
+                    chickenScaleAccelerate = -chickenScaleAccelerate;
+                }
+                else if(chickenScale <= 0.0000000000000000000001){
+                    chickenScale = 0.0000000000000000000001;
+                    chickenScaleVelocity = -chickenScaleVelocity;
+                    chickenScaleAccelerate = -chickenScaleAccelerate;
+                }
+
+                KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
+                KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
+                if(KFCScale >= 1){
+                    KFCScale = 1;
+                    KFCScaleVelocity = -KFCScaleVelocity;
+                    KFCScaleAccelerate = -KFCScaleAccelerate;
+                }
+                else if(KFCScale <= 0.0000000000000000000001){
+                    KFCScale = 0.0000000000000000000001;
+                    KFCScaleVelocity = -KFCScaleVelocity;
+                    KFCScaleAccelerate = -KFCScaleAccelerate;
+                }
+            }
+            else if(timer <= 25 + 27/letterVelocity){
+                isText = true;
+                currentStage = Stage.Text;
+                letter3 += letterVelocity * elapsedTime / 1000.0;
+            }
+            else if(timer <= 25 + 51/letterVelocity){
+                isText = true;
+                currentStage = Stage.Text;
+                letter4 += letterVelocity * elapsedTime / 1000.0;
+            }
             //Display
             repaint();
         }
