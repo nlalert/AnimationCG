@@ -158,15 +158,19 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 - 99999999 second
-            else if(timer <= 9999999 && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the pillar
+            else if(timer <= 12.5 && timer * 1000 % 1 == 0 || pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY){ //Moving each balls in the layer of the pillar
                 currentStage = Stage.Evolve;
                 if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY){ //Moving each balls in the layer of the pillar
                     updatePillar();
                 }
-                else if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
+                //whitenOpacity += 100 * elapsedTime / 1000.0;
+            }
+            else if(timer <= 9999999 && timer * 1000 % 1 == 0 || domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the pillar
+                currentStage = Stage.Evolve;
+                if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
                     updateDome();
                 }
-                whitenOpacity += 100 * elapsedTime / 1000.0;
+                //whitenOpacity += 100 * elapsedTime / 1000.0;
             }
             else if(timer <= 25 || chickenScale > 0.1){
                 currentStage = Stage.Evolve;
