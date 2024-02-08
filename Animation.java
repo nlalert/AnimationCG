@@ -75,7 +75,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     int pillarBalls = 4;
     int pillarMidpointX = 300;
     int pillarMidpointY = 360;
-    int pillarEndpointY = 0;
+    int pillarEndpointY = 1;
     double[][] pillarSize = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
     double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
@@ -84,7 +84,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     int domeLayers = 6;
     int domeBalls = 8;
     int domeMidpointX = 300;
-    int domeMidpointY = 50;
+    int domeMidpointY = 1;
     int domeEndpointY = 360;
     double[][] domeSize = new double[domeLayers][domeBalls];
     double[][] domePositionX = new double[domeLayers][domeBalls];
@@ -157,15 +157,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
-            }//6.5 - 12.5 second
-            else if(timer <= 12.5){ //Moving each balls in the layer of the pillar
+            }//6.5 - 99999999 second
+            else if(timer <= 9999999 && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the pillar
                 currentStage = Stage.Evolve;
-                if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the pillar
+                if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY){ //Moving each balls in the layer of the pillar
                     updatePillar();
                 }
-            }//12.5 - 99999999 second
-            else if(timer <= 9999999){ //Moving each balls in the layer of the pillar
-                if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the dome
+                else if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
                     updateDome();
                 }
                 whitenOpacity += 100 * elapsedTime / 1000.0;
@@ -208,8 +206,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Text;
                 letter4 += letterVelocity * elapsedTime / 1000.0;
             }
-        
-        
             //Display
             repaint();
         }
@@ -540,7 +536,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
                 
                 pillarSize[i][j] = currentSize;
-                double currentPositionY = Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - pillarMidpointX, 2)) * (b*b) / (a*a)); //(a^2-(x-h)^2)(b^2)/(a^2)
+                double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - pillarMidpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
 
                 if (pillarDirection[i][j] == 'R'){
 
@@ -576,7 +572,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         int finalLength = 300;
 
         double domeHeight = domeEndpointY - domeMidpointY;
-        double domeLength = (finalLength - baseLength) / 2;
+        double domeLenght = (finalLength - baseLength) / 2;
         double veticalSpeed = 0.0001;
         
         for (int i = 0; i < domeLayers; i++) {
@@ -585,17 +581,14 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
             double layerHalfLength;
 
-                if(domeHeight < domeLength){
-                    layerHalfLength = Math.sqrt(((domeLength*domeLength) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeHeight*domeHeight) / (domeLength*domeLength));
-                } //(b^2-(y-k)^2)(a^2)/(b^2)
+                if(domeHeight > domeLenght){
+                    layerHalfLength = (Math.sqrt(((domeHeight*domeHeight) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeLenght*domeLenght) / (domeHeight*domeHeight)));
+                } //(a^2-(x-h)^2)(b^2)/(a^2)
                 else {
-                    layerHalfLength = Math.sqrt(((domeHeight*domeHeight) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeLength*domeLength) / (domeHeight*domeHeight));
-                } //(a^2-(y-k)^2)(b^2)/(a^2)
+                    layerHalfLength = (Math.sqrt(((domeLenght*domeLenght) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeHeight*domeHeight) / (domeLenght*domeLenght)));
+                } //(b^2-(x-h)^2)(a^2)/(b^2)
 
-            double heightRatio = (domeEndpointY - domePositionY[i][domeBalls]) / domeEndpointY;
-
-            double leftBorder = domeMidpointX - layerHalfLength; 
-            double rightBorder = domeMidpointX + layerHalfLength;
+            double leftBorder = domeMidpointX - layerHalfLength;
             double layerLength = layerHalfLength * 2;
             double a = layerHalfLength;
             double b = layerHeight / 2;
@@ -604,21 +597,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
                 domeSize[i][j] = baseSize;
 
-                if(j == 0){
-                    domePositionX[i][j] = leftBorder;
-                    domePositionY[i][j] = domePositionY[i][domeBalls];
-                }
-                else if(j == domeBalls - 1){
-                    domePositionX[i][j] = rightBorder;
-                    domePositionY[i][j] = domePositionY[i][domeBalls];
-                }
-                else{
-                    domePositionX[i][j] = (((double)j/(domeBalls-1)) * (layerLength)) + leftBorder;
-                }
+                domePositionX[i][j] = (((double)j/(domeBalls-1)) * (layerLength)) + leftBorder;
 
-                if(j < (domeBalls + 1) / 2 && j != 0 && j!= domeBalls - 1) {
+                if(j < (domeBalls + 1) / 2) {
                     double currentPositionY = (Math.sqrt(((a*a) - Math.pow(domePositionX[i][j] - domeMidpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
-                    domePositionY[i][j] = (domePositionY[i][domeBalls]) - currentPositionY * heightRatio;
+                    domePositionY[i][j] = (domePositionY[i][domeBalls]) + currentPositionY;
                     domePositionY[i][domeBalls-(j+1)] = domePositionY[i][j];
                 }
                 
@@ -809,7 +792,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY && pillarPositionY[0][pillarBalls] < pillarMidpointY){
             drawPillar(g);
         }
-        else if(domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && domePositionY[0][domeBalls] > domeMidpointY){
+        if(domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && domePositionY[0][domeBalls] > domeMidpointY){
             drawDome(g);
         }
     }
@@ -832,10 +815,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < domeLayers; i++) {   
             for (int j = 0; j < domeBalls; j++) {
-                if (domePositionY[i][j] > domeMidpointY && domePositionY[i][j] <= domeEndpointY){
+                if (domePositionY[i][domeBalls] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
                     drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
                     if ((int)domeSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                        //floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
                     }
                 }
             }
