@@ -158,11 +158,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 - 12.5 second
-            else if(timer <= 12.5){ //Moving each balls in the layer of the pillar
+            else if(timer <= 12.5 || false){ //Moving each balls in the layer of the pillar
                 currentStage = Stage.Evolve;
                 if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the pillar
                     updatePillar();
                 }
+                whitenOpacity += 100 * elapsedTime / 1000.0;
             }//12.5 - 99999999 second
             else if(timer <= 9999999){ //Moving each balls in the layer of the pillar
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the dome
@@ -775,7 +776,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 if (domePositionY[i][j] > domeMidpointY && domePositionY[i][j] <= domeEndpointY){
                     drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
                     if ((int)domeSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
                     }
                 }
             }
