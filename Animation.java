@@ -597,7 +597,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 if (domePositionY[i][domeBalls] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
                     drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
                     if ((int)domeSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                        //floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
                     }
                 }
             }
