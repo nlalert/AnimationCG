@@ -32,6 +32,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     private Stage currentStage = Stage.Show;
     private boolean isDraw = false;
     private boolean isText = true;
+    private boolean isKFC = false;
     private double whitenOpacity = 20;
 
     public static void main(String[] args) {
@@ -148,7 +149,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         initializeRing();
         initializeFountain();
         drawBabyBuffer();
-        drawWhiteKFC();
+        drawWhiteKFC(false);
         
         startTime = lastTime;
         while (true) {
@@ -268,55 +269,30 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     KFCScaleAccelerate = -KFCScaleAccelerate;
                 }
             }
-            else if(timer <= 25 + 27/letterVelocity){
+            else if(timer <= 40 + 27/letterVelocity){
+                if(!isText){
+                    isKFC = true;
+                }
+                if(isKFC){
+                    drawWhiteKFC(true);
+                }
                 isText = true;
                 currentStage = Stage.Text;
                 letter3 += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer <= 25 + 51/letterVelocity){
+            else if(timer <= 40 + 51/letterVelocity){
                 isText = true;
                 currentStage = Stage.Text;
                 letter4 += letterVelocity * elapsedTime / 1000.0;
             }
+        
             //Display
             repaint();
         }
     }
 
-    private void drawWhiteKFC() {
+    private void drawKFC() {
         Graphics2D g = KFCBuffer.createGraphics();
-        
-        g.setColor(new Color(255,255,255,1));
-        g.fillRect(0, 0, 600, 600);
-        // g.setColor(Color.WHITE);
-        g.setColor(Color.BLACK);
-        //left
-        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 90+165, 168+165, 90+165, 168+165);
-        //bottom
-        drawCurve(g, 90+165, 168+165, 122+165, 181+165, 159+165, 181+165, 190+165, 168+165);
-        //right
-        drawCurve(g, 190+165, 168+165, 190+165, 168+165, 205+165, 67+165, 205+165, 67+165);
-
-        //left rim
-        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 74+165, 62+165, 74+165, 62+165);
-        //right rim
-        drawCurve(g, 202+165, 62+165, 202+165, 62+165, 205+165, 67+165, 205+165, 67+165);
-
-        //chicken
-        drawCurve(g, 74+165, 62+165, 74+165, 62+165, 79+165, 54+165, 79+165, 54+165);
-        drawCurve(g, 79+165, 54+165, 79+165, 54+165, 82+165, 53+165, 83+165, 55+165);
-        drawCurve(g, 83+165, 55+165, 83+165, 55+165, 97+165, 45+165, 97+165, 45+165);
-
-        drawCurve(g, 97+165, 45+165, 92+165, 39+165, 91+165, 36+165, 97+165, 34+165);
-        drawCurve(g, 97+165, 34+165, 97+165, 34+165, 107+165, 31+165, 111+165, 23+165);
-        drawCurve(g, 111+165, 23+165, 111+165, 23+165, 129+165, 17+165, 129+165, 17+165);
-        drawCurve(g, 129+165, 17+165, 129+165, 17+165, 149+165, 25+165, 149+165, 25+165);
-
-        drawCurve(g, 149+165, 25+165, 149+165 ,25+165, 150+165, 21+165, 157+165, 25+165);
-        drawCurve(g, 157+165, 25+165, 163+165, 21+165, 171+165, 21+165, 182+165, 30+165);
-        drawCurve(g, 182+165, 30+165, 187+165, 36+165, 187+165, 40+165, 183+165, 43+165);
-        drawCurve(g, 183+165, 43+165, 194+165, 42+165, 202+165, 49+165, 202+165, 62+165);
-        floodFill(g, 143+165, 82+165, Color.WHITE, KFCBuffer);
 
         g.setColor(Color.BLACK);
         //rim
@@ -404,8 +380,53 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         floodFill(g, 309, 227, Color.ORANGE, KFCBuffer);
         floodFill(g, 329, 232, Color.ORANGE, KFCBuffer);
         floodFill(g, 306, 215, Color.ORANGE, KFCBuffer);
+        isKFC = false;
+    }
 
+    private void drawWhiteKFC(boolean isBlack) {
+        Graphics2D g = KFCBuffer.createGraphics();
         
+        g.setColor(new Color(255,255,255,1));
+        g.fillRect(0, 0, 600, 600);
+        // g.setColor(Color.WHITE);
+        if(isBlack){
+            g.setColor(Color.black);
+        }
+        else{
+            g.setColor(new Color(255, 255, 255));
+        }
+
+        //left
+        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 90+165, 168+165, 90+165, 168+165);
+        //bottom
+        drawCurve(g, 90+165, 168+165, 122+165, 181+165, 159+165, 181+165, 190+165, 168+165);
+        //right
+        drawCurve(g, 190+165, 168+165, 190+165, 168+165, 205+165, 67+165, 205+165, 67+165);
+
+        //left rim
+        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 74+165, 62+165, 74+165, 62+165);
+        //right rim
+        drawCurve(g, 202+165, 62+165, 202+165, 62+165, 205+165, 67+165, 205+165, 67+165);
+
+        //chicken
+        drawCurve(g, 74+165, 62+165, 74+165, 62+165, 79+165, 54+165, 79+165, 54+165);
+        drawCurve(g, 79+165, 54+165, 79+165, 54+165, 82+165, 53+165, 83+165, 55+165);
+        drawCurve(g, 83+165, 55+165, 83+165, 55+165, 97+165, 45+165, 97+165, 45+165);
+
+        drawCurve(g, 97+165, 45+165, 92+165, 39+165, 91+165, 36+165, 97+165, 34+165);
+        drawCurve(g, 97+165, 34+165, 97+165, 34+165, 107+165, 31+165, 111+165, 23+165);
+        drawCurve(g, 111+165, 23+165, 111+165, 23+165, 129+165, 17+165, 129+165, 17+165);
+        drawCurve(g, 129+165, 17+165, 129+165, 17+165, 149+165, 25+165, 149+165, 25+165);
+
+        drawCurve(g, 149+165, 25+165, 149+165 ,25+165, 150+165, 21+165, 157+165, 25+165);
+        drawCurve(g, 157+165, 25+165, 163+165, 21+165, 171+165, 21+165, 182+165, 30+165);
+        drawCurve(g, 182+165, 30+165, 187+165, 36+165, 187+165, 40+165, 183+165, 43+165);
+        drawCurve(g, 183+165, 43+165, 194+165, 42+165, 202+165, 49+165, 202+165, 62+165);
+        if(isBlack){
+            drawKFC();
+        }else{
+            floodFill(g, 143+165, 82+165, Color.WHITE, KFCBuffer);
+        }
     }
 
     private void drawBabyBuffer() {
@@ -1106,43 +1127,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void drawBaby(Graphics2D g) {
         
-    }
-
-    private void drawKFC(Graphics2D g) {
-        //หงอน
-        g.setColor(Color.BLACK);
-        // //left side
-        // drawCurve(g, 220, 245, 220, 245, 240, 360, 240, 360);
-        // //bottom
-        // drawCurve(g, 240, 360, 265, 370, 345, 370, 360, 360);
-        // //right side
-        // drawCurve(g, 380, 245, 380, 245, 360, 360, 360, 360);
-        // //top
-        // drawCurve(g, 220, 245, 260, 255, 340, 255, 380, 245);
-        // //chicken
-        // drawCurve(g, 220, 245, 218, 226, 236, 215, 251, 223);
-        // drawCurve(g, 251, 223, 263, 228, 265, 249, 265, 249);
-        // drawCurve(g, 265, 249, 263, 259, 267, 264, 275, 267);
-        // drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
-        // drawCurve(g, 275, 267, 285, 270, 279, 280, 270, 277);
-        // drawCurve(g, 54, 23, 54, 23, 61, 29, 62, 39);
-        // drawCurve(g, 60, 46, 60, 46, 65, 17, 96, 1);
-        // drawCurve(g, 96, 1, 101, 8, 90, 42, 90, 42);
-        // drawCurve(g, 90, 42, 90, 42, 102, 32, 118, 30);
-        // drawCurve(g, 118, 30, 118, 30, 109, 51, 78, 61);
-        // //right face
-        // g.setColor(Color.yellow.darker());
-        // drawCurve(g, 62, 54, 62, 54, 65, 43, 73, 39);
-        // drawCurve(g, 73, 39, 73, 39, 75, 42, 71, 55);
-        // drawCurve(g, 71, 55, 71, 55, 75, 52, 78, 53);
-        // drawCurve(g, 78, 53, 78, 53, 78, 55, 75, 60);
-        // drawCurve(g, 75, 60, 110, 73, 106, 113, 69, 122);
-        // drawLine(g, 99, 0 ,99, 200);
-        // //left face
-        // drawCurve(g, 62, 54, 40, 51, 15, 60, 4, 81);
-        //     //left eye
-        // midpointElispe(g, 5, 85, 3, 4);
-        // drawLine(g, 4, 68 ,46, 48);
     }
     
 
