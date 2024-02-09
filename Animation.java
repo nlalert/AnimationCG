@@ -25,6 +25,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     //Main variable
     static Font font;
     private BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    private BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     private BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     private BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     private Stage currentStage = Stage.Show;
@@ -51,6 +52,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         f.pack();
         f.setVisible(true);
         f.setLocationRelativeTo(null);
+        f.setResizable(false);
         (new Thread(m)).start();
     }
 
@@ -711,6 +713,14 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g2.translate(-300, -280);
 
         g2.drawImage(KFCBuffer, 0, 0, this);
+
+        g2.setTransform(originalTransform);
+        
+        if(isText){
+            drawTextbox();
+            drawText();
+        }
+        g2.drawImage(textBoxBuffer, 0, 0, this);
     }
 
     private void whitenChicken() {
@@ -753,12 +763,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(currentStage == Stage.Evolve)
             fadeToBlack(g);
             drawEffect(g);
-        if(isText){
-            drawTextbox(g);
-            drawText(g);
-        }
-        // if(currentStage == Stage.KFC)
-        //     drawKFC(g);
     }
 
     private void drawBackground(Graphics2D g) {
@@ -802,7 +806,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
     
     //draw text box on bottom part of screen
-    private void drawTextbox(Graphics2D g) {
+    private void drawTextbox() {
+        Graphics2D g = textBoxBuffer.createGraphics();
         g.setColor(new Color(62,57,70));
         g.fillRect(0, 450, 600, 150);
 
@@ -813,10 +818,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.fillRoundRect(20, 460, 560, 130, 10, 10);
     }
 
-    private void drawText(Graphics2D g) {
+    private void drawText() {
+        Graphics2D g = textBoxBuffer.createGraphics();
         String text1 = "";
         String text2 = "";
-        if(letter2 >= line2Text.length()){
+        if(letter2 > line2Text.length()){
             for (int i = 0; i < letter3 && i < line3Text.length(); i++) 
                 text1 += line3Text.charAt(i);
             for (int i = 0; i < letter4 && i < line4Text.length(); i++){
