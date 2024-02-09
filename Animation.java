@@ -10,8 +10,10 @@ import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -70,32 +72,60 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     
     double tranparency = 0;
     double transition = 0;
+    boolean isWaiting = false;
 
-    int pillarLayers = 10;
-    int pillarBalls = 4;
-    int pillarMidpointX = 300;
-    int pillarMidpointY = 360;
-    int pillarEndpointY = 1;
-    double[][] pillarSize = new double[pillarLayers][pillarBalls];
-    double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
-    double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
-    char[][] pillarDirection = new char[pillarLayers][pillarBalls];
+    int spiralLayers = 10;
+    int spiralBalls = 4;
+    int spiralMidpointX = 300;
+    int spiralMidpointY = 360;
+    int spiralEndpointY = 0;
+    boolean isSpiralDone = false;
+    char[][] spiralDirection = new char[spiralLayers][spiralBalls];
+    double[][] spiralSize = new double[spiralLayers][spiralBalls];
+    double[][] spiralPositionX = new double[spiralLayers][spiralBalls];
+    double[][] spiralPositionY = new double[spiralLayers][spiralBalls+1];
 
     int domeLayers = 6;
     int domeBalls = 8;
     int domeMidpointX = 300;
-    int domeMidpointY = 1;
+    int domeMidpointY = 20;
     int domeEndpointY = 360;
+    boolean isDomeDone = false;
     double[][] domeSize = new double[domeLayers][domeBalls];
     double[][] domePositionX = new double[domeLayers][domeBalls];
     double[][] domePositionY = new double[domeLayers][domeBalls+1];
 
+    int ringLayers = 2;
+    int ringBalls = 16;
+    int ringMidpointX = 300;
+    int ringMidpointY = 300;
+    int ringBaseRadius = 400;
+    int ringFinalRadius = 25;
+    boolean isRingDone = false;
+    double[][] ringSize = new double[ringLayers][ringBalls];
+    double[][] ringPositionX = new double[ringLayers][ringBalls];
+    double[][] ringPositionY = new double[ringLayers][ringBalls+1];
+    double[][] ringAngle = new double[ringLayers][ringBalls];
+
+    int fountainBalls = 30;
+    int fountainBallsMinSize = 8;
+    int fountainBallsMaxSize = 12;
+    int fountainMidpointX = 300;
+    int fountainMidpointY = 360;
+    boolean isFountainDone = false;
+    char[] fountainDirection = new char[fountainBalls+1];
+    double[] fountainSize = new double[fountainBalls+1];
+    double[] fountainPositionX = new double[fountainBalls+1];
+    double[] fountainPositionY = new double[fountainBalls+1];
+    double[] fountainArchLength = new double[fountainBalls+1];
+    double[] fountainArchHeight = new double[fountainBalls+1];
+
     double chickenMove = 0;
     double chickenVelocity = -100;
-    double chickenScale = 0;
+    double chickenScale = 1;
     double chickenScaleVelocity = 2;
     double chickenScaleAccelerate = 0.7;
-    double KFCScale = 1;
+    double KFCScale = 0;
     double KFCScaleVelocity = 2;
     double KFCScaleAccelerate = 0.7;
     double timer = 0;
@@ -113,8 +143,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         double currentTime, elapsedTime, startTime;
         double letterVelocity = 10;
 
-        initializePillar();
+        initializeSpiral();
         initializeDome();
+        initializeRing();
+        initializeFountain();
         drawBabyBuffer();
         drawWhiteKFC();
         
@@ -128,7 +160,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
 
             //0 - 3 second
-            if(timer <= 39999999){
+            if(timer <= 3){
                 //do nothing
             }//3-6
             else if(timer <= 6){
@@ -153,24 +185,60 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 currentStage = Stage.Text;
                 letter2 += letterVelocity * elapsedTime / 1000.0;
             }//5.5 - 6.5 second
-            else if(timer <= 9.5 && tranparency < 255){//dark screen transition at the 4th second  
-                isText = false;
+            else if(timer <= 9.5 && tranparency < 255){//dark screen transition at the 4th second
+                isText = true;
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 - 99999999 second
-            else if(timer <= 12.5 && timer * 1000 % 1 == 0 || pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY){ //Moving each balls in the layer of the pillar
+            else if(timer <= 12.5 && timer * 1000 % 1 == 0 || !isSpiralDone){
+                isText = true;
                 currentStage = Stage.Evolve;
-                if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY){ //Moving each balls in the layer of the pillar
-                    updatePillar();
+                if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){ //Moving each balls in the layer of the spiral
+                    isWaiting = false;
+                    updateSpiral();
                 }
-                //whitenOpacity += 100 * elapsedTime / 1000.0;
+                else{
+                    isWaiting = true;
+                    isSpiralDone = true;
+                }
+                whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-            else if(timer <= 9999999 && timer * 1000 % 1 == 0 || domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the pillar
+            else if(timer <= 15.5 && timer * 1000 % 1 == 0 || !isDomeDone){
+                isText = true;
                 currentStage = Stage.Evolve;
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
+                    isWaiting = false;
                     updateDome();
                 }
-                //whitenOpacity += 100 * elapsedTime / 1000.0;
+                else{
+                    isWaiting = true;
+                    isDomeDone = true;
+                }
+                whitenOpacity += 100 * elapsedTime / 1000.0;
+            }
+            else if(timer <= 18.5 && timer * 1000 % 1 == 0 || !isRingDone){
+                isText = true;
+                currentStage = Stage.Evolve;
+                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
+                    isWaiting = false;
+                    updateRing();
+                }
+                else{
+                    isWaiting = true;
+                    isRingDone = true;
+                }
+            }
+            else if(timer <= 21.5 && timer * 1000 % 1 == 0 || !isFountainDone){
+                isText = true;
+                currentStage = Stage.Evolve;
+                if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
+                    isWaiting = false;
+                    updateFountain();
+                }
+                else{
+                    isWaiting = true;
+                    isFountainDone = true;
+                }
             }
             else if(timer <= 25 || chickenScale > 0.1){
                 currentStage = Stage.Evolve;
@@ -182,7 +250,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     chickenScaleAccelerate = -chickenScaleAccelerate;
                 }
                 else if(chickenScale <= 0.0000000000000000000001){
-                    chickenScale = 0.0000000000000000000001;
+                    chickenScale = 0.0000000000000000000001;    
                     chickenScaleVelocity = -chickenScaleVelocity;
                     chickenScaleAccelerate = -chickenScaleAccelerate;
                 }
@@ -465,29 +533,26 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         isDraw = true;
     }
 
-    private void initializePillar() {
+    private void initializeSpiral() {
 
-        //Set a horizontal position of each balls in the layer of the pillar
-        for (double[] px : pillarPositionX) {
-            px[0] = 300; //1st ball of each layer at x = 300
-            px[1] = 300; //2nd ball of each layer at x = 300
-            px[2] = 450; //3rd ball of each layer at x = 450
-            px[3] = 150; //4th ball of each layer at x = 150
+        //Set a horizontal position of each balls in the layer of the spiral
+        for (double[] px : spiralPositionX) {
+            px[3] = 150;            //4th ball of each layer at x = 150
+            px[0] = px[2] = 300;    //1st ball and 3rd ball of each layer at x = 300
+            px[1] = 450;            //2nd ball of each layer at x = 450
         }
 
-        //Set a vertical position of each layer of the pillar
+        //Set a vertical position of each layer of the spiral
         int layerGaps = 0;
-        for (double[] py : pillarPositionY) {
-            py[pillarBalls] = pillarMidpointY + layerGaps;
+        for (double[] py : spiralPositionY) {
+            py[spiralBalls] = spiralMidpointY + layerGaps;
             layerGaps += 2;
         }
 
-        //Set a horizontal direction of each balls in the layer of the pillar
-        for (char[] d : pillarDirection) {
-            d[0] = 'L'; //1st ball of each layer move to the left
-            d[1] = 'R'; //2st ball of each layer move to the right
-            d[2] = 'L'; //3rd ball of each layer move to the left
-            d[3] = 'R'; //4th ball of each layer move to the right
+        //Set a horizontal direction of each balls in the layer of the spiral
+        for (char[] d : spiralDirection) {
+            d[0] = d[1] = 'L'; //1st ball and 2st ball of each layer move to the left
+            d[2] = d[3] = 'R'; //3rd ball and 4th ball of each layer move to the right
         }
     }
 
@@ -501,6 +566,53 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    private void initializeRing() {
+     
+        //Set a vertical position of each layer of the spiral
+        int layerGaps = 0;
+        for (double[] py : ringPositionY) {
+            py[ringBalls] = (ringMidpointY - ringBaseRadius) - layerGaps;
+            layerGaps += 400;
+        } 
+        
+        //Set an angle, a vertical position and a horizontal position of each balls in the layer of the ring
+        for (int i = 0; i < ringLayers; i++) { 
+            double radius = ringMidpointY - ringPositionY[i][ringBalls];
+            for (int j = 0; j < ringBalls; j++) { 
+                ringAngle[i][j] = (360 / (double)ringBalls) * j;
+                ringPositionX[i][j] = ringMidpointX - (radius * Math.cos(Math.PI * 2 * ringAngle[i][j] / 360));
+                ringPositionY[i][j] = ringMidpointY - (radius * Math.sin(Math.PI * 2 * ringAngle[i][j] / 360));
+            }
+        }
+
+    }
+
+    private void initializeFountain() {
+
+        Random randomNumber = new Random();
+
+        int archMinLength = 0;
+        int archMaxLength = 100;
+        int archMinHeight = 200;
+        int archMaxHeight = 350;
+        int archMaxGaps = 50;
+
+        for (int i = 0; i < fountainBalls; i++) {
+            fountainSize[i] = fountainBallsMinSize + (fountainBallsMaxSize - fountainBallsMinSize) * randomNumber.nextDouble();
+            fountainArchHeight[i] = archMinHeight + randomNumber.nextInt(archMaxHeight - archMinHeight - 1);
+            fountainArchLength[i] = (archMinLength - randomNumber.nextInt(archMaxLength - archMinLength - 1)) * (Math.pow((-1) , randomNumber.nextInt(2)));
+            fountainPositionY[i] = fountainMidpointY + randomNumber.nextInt(archMaxGaps + 1);
+            fountainDirection[i] = 'U';
+        }
+
+        fountainSize[fountainBalls] = fountainBallsMaxSize + 1;
+        fountainArchHeight[fountainBalls] = archMaxHeight;
+        fountainArchLength[fountainBalls] = archMaxLength;
+        fountainPositionY[fountainBalls] = fountainMidpointY + archMaxGaps;
+        fountainDirection[fountainBalls] = 'U';
+        
+    }
+    
     private void updateTransparency(double elapsedTime) {
         transition += 300 * elapsedTime / 1000.0;
         if((int)transition % 36 == 3){
@@ -508,7 +620,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
-    private void updatePillar() {
+    private void updateSpiral() {
         int baseSize = 8;
         int finalSize = 3;
         int layerHeight = 40;
@@ -519,70 +631,70 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         double horizontalSpeed = 0.0002;
         double verticalVelocity = 60;
 
-        for (int i = 0; i < pillarLayers; i++) {  
+        for (int i = 0; i < spiralLayers; i++) {  
                                     
-            double heightRatio = ((pillarMidpointY - pillarPositionY[i][pillarBalls]) / pillarMidpointX);
+            double heightRatio = ((spiralMidpointY - spiralPositionY[i][spiralBalls]) / spiralMidpointX);
             
             double currentSize = baseSize - heightRatio * (baseSize - finalSize);
             double currentVerlocity =  veticalSpeed * (heightRatio * verticalVelocity);
 
             if (heightRatio > 0){
-                pillarPositionY[i][pillarBalls] -= veticalSpeed + currentVerlocity;
+                spiralPositionY[i][spiralBalls] -= veticalSpeed + currentVerlocity;
             }
             else{
-                pillarPositionY[i][pillarBalls] -= veticalSpeed;
+                spiralPositionY[i][spiralBalls] -= veticalSpeed;
             }
 
-            double leftBorder = (pillarMidpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
-            double rightBorder = (pillarMidpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
+            double leftBorder = (spiralMidpointX - baseLength / 2) + heightRatio * ((baseLength - finalLength) / 2);
+            double rightBorder = (spiralMidpointX + baseLength / 2) - heightRatio * ((baseLength - finalLength) / 2);
             double layerLength = (rightBorder - leftBorder);
 
             double a = layerLength / 2;
             double b = layerHeight / 2;
 
-            for (int j = 0; j < pillarBalls; j++) {                          
+            for (int j = 0; j < spiralBalls; j++) {                          
                     
-                if(pillarPositionY[i][pillarBalls] <= pillarMidpointY){ 
+                if(spiralPositionY[i][spiralBalls] <= spiralMidpointY){ 
                     
-                    if(pillarPositionX[i][j] <= leftBorder){
-                        pillarDirection[i][j] = 'R';
+                    if(spiralPositionX[i][j] <= leftBorder){
+                        spiralDirection[i][j] = 'R';
                     }
                     
-                    else if(pillarPositionX[i][j] >= rightBorder){
-                        pillarDirection[i][j] = 'L';
+                    else if(spiralPositionX[i][j] >= rightBorder){
+                        spiralDirection[i][j] = 'L';
                     }
                     
-                    if (pillarDirection[i][j] == 'L'){
-                        pillarPositionX[i][j] -= horizontalSpeed;
+                    if (spiralDirection[i][j] == 'L'){
+                        spiralPositionX[i][j] -= horizontalSpeed;
                     }
                     
-                    else if (pillarDirection[i][j] == 'R'){
-                        pillarPositionX[i][j] += horizontalSpeed;
+                    else if (spiralDirection[i][j] == 'R'){
+                        spiralPositionX[i][j] += horizontalSpeed;
                     }
                     
                 }
                 
-                pillarSize[i][j] = currentSize;
-                double currentPositionY = (Math.sqrt(((a*a) - Math.pow(pillarPositionX[i][j] - pillarMidpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
+                spiralSize[i][j] = currentSize;
+                double currentDistantY = Math.sqrt(((a*a) - Math.pow(spiralPositionX[i][j] - spiralMidpointX, 2)) * (b*b) / (a*a)); //(a^2-(x-h)^2)(b^2)/(a^2)
 
-                if (pillarDirection[i][j] == 'R'){
+                if (spiralDirection[i][j] == 'R'){
 
-                    if (pillarPositionX[i][j] - leftBorder <= layerLength / 3 * 2 && pillarPositionX[i][j] - leftBorder >= layerLength / 3){
-                        pillarSize[i][j] -= 3;
+                    if (spiralPositionX[i][j] - leftBorder <= layerLength / 3 * 2 && spiralPositionX[i][j] - leftBorder >= layerLength / 3){
+                        spiralSize[i][j] -= 3;
                     }
                     else{
-                        pillarSize[i][j] -= 2;
+                        spiralSize[i][j] -= 2;
                     }
-                    pillarPositionY[i][j] = (pillarPositionY[i][pillarBalls]) - currentPositionY; 
+                    spiralPositionY[i][j] = (spiralPositionY[i][spiralBalls]) - currentDistantY; 
 
                 }
 
                 else{
 
-                    if (pillarPositionX[i][j] - leftBorder > layerLength / 3 * 2 || pillarPositionX[i][j] - leftBorder < layerLength / 3){
-                        pillarSize[i][j] -= 1;
+                    if (spiralPositionX[i][j] - leftBorder > layerLength / 3 * 2 || spiralPositionX[i][j] - leftBorder < layerLength / 3){
+                        spiralSize[i][j] -= 1;
                     }
-                    pillarPositionY[i][j] = (pillarPositionY[i][pillarBalls]) + currentPositionY; 
+                    spiralPositionY[i][j] = (spiralPositionY[i][spiralBalls]) + currentDistantY; 
 
                 }
 
@@ -593,13 +705,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void updateDome(){
 
-        int baseSize = 5;
+        int baseSize = 6;
         int layerHeight = 40;
         int baseLength = 75;
         int finalLength = 300;
 
         double domeHeight = domeEndpointY - domeMidpointY;
-        double domeLenght = (finalLength - baseLength) / 2;
+        double domeLength = (finalLength - baseLength) / 2;
         double veticalSpeed = 0.0001;
         
         for (int i = 0; i < domeLayers; i++) {
@@ -608,14 +720,17 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
             double layerHalfLength;
 
-                if(domeHeight > domeLenght){
-                    layerHalfLength = (Math.sqrt(((domeHeight*domeHeight) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeLenght*domeLenght) / (domeHeight*domeHeight)));
-                } //(a^2-(x-h)^2)(b^2)/(a^2)
-                else {
-                    layerHalfLength = (Math.sqrt(((domeLenght*domeLenght) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeHeight*domeHeight) / (domeLenght*domeLenght)));
-                } //(b^2-(x-h)^2)(a^2)/(b^2)
+            if(domeHeight < domeLength){
+                layerHalfLength = Math.sqrt(((domeLength*domeLength) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeHeight*domeHeight) / (domeLength*domeLength));
+            } //(b^2-(y-k)^2)(a^2)/(b^2)
+            else {
+                layerHalfLength = Math.sqrt(((domeHeight*domeHeight) - Math.pow(domePositionY[i][domeBalls] - domeEndpointY, 2)) * (domeLength*domeLength) / (domeHeight*domeHeight));
+            } //(a^2-(y-k)^2)(b^2)/(a^2)
 
-            double leftBorder = domeMidpointX - layerHalfLength;
+            double heightRatio = (domeEndpointY - domePositionY[i][domeBalls]) / domeEndpointY;
+
+            double leftBorder = domeMidpointX - layerHalfLength; 
+            double rightBorder = domeMidpointX + layerHalfLength;
             double layerLength = layerHalfLength * 2;
             double a = layerHalfLength;
             double b = layerHeight / 2;
@@ -624,11 +739,21 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
                 domeSize[i][j] = baseSize;
 
-                domePositionX[i][j] = (((double)j/(domeBalls-1)) * (layerLength)) + leftBorder;
+                if(j == 0){
+                    domePositionX[i][j] = leftBorder;
+                    domePositionY[i][j] = domePositionY[i][domeBalls];
+                }
+                else if(j == domeBalls - 1){
+                    domePositionX[i][j] = rightBorder;
+                    domePositionY[i][j] = domePositionY[i][domeBalls];
+                }
+                else{
+                    domePositionX[i][j] = (((double)j/(domeBalls-1)) * (layerLength)) + leftBorder;
+                }
 
-                if(j < (domeBalls + 1) / 2) {
-                    double currentPositionY = (Math.sqrt(((a*a) - Math.pow(domePositionX[i][j] - domeMidpointX, 2)) * (b*b) / (a*a))); //(a^2-(x-h)^2)(b^2)/(a^2)
-                    domePositionY[i][j] = (domePositionY[i][domeBalls]) + currentPositionY;
+                if(j < (domeBalls + 1) / 2 && j != 0 && j!= domeBalls - 1) {
+                    double currentDistantY = Math.sqrt(((a*a) - Math.pow(domePositionX[i][j] - domeMidpointX, 2)) * (b*b) / (a*a)); //(a^2-(x-h)^2)(b^2)/(a^2)
+                    domePositionY[i][j] = (domePositionY[i][domeBalls]) - currentDistantY * heightRatio;
                     domePositionY[i][domeBalls-(j+1)] = domePositionY[i][j];
                 }
                 
@@ -640,6 +765,98 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         }
     }
+
+    private void updateRing(){
+
+        int baseSize = 8;
+        double veticalSpeed = 0.0002;
+        double spinningSpeed = 0.0001;
+
+        for (int i = 0; i < ringLayers; i++) {
+
+            ringPositionY[i][ringBalls] += veticalSpeed;
+            double currentRadius = ringMidpointY - ringPositionY[i][ringBalls];
+
+            for (int j = 0; j < ringBalls; j++) {             
+                ringSize[i][j] = baseSize;
+                if(ringPositionY[i][ringBalls] >= ringMidpointY - ringBaseRadius && ringPositionY[i][ringBalls] <= ringMidpointY - ringFinalRadius){ 
+                    ringAngle[i][j] = (ringAngle[i][j] + spinningSpeed) % 360;
+                    ringPositionX[i][j] = ringMidpointX - (currentRadius * Math.cos(Math.PI * 2 * ringAngle[i][j] / 360));
+                    ringPositionY[i][j] = ringMidpointY - (currentRadius * Math.sin(Math.PI * 2 * ringAngle[i][j] / 360));
+                }
+            }
+
+        }
+    }
+
+    private void updateFountain(){
+
+        double shrinkingSpeed = 0.000001;
+        double veticalSpeed = 0.0001;
+
+        for (int i = 0; i <= fountainBalls; i++) {
+
+            double archHeight = fountainArchHeight[i];
+            double archLength = Math.abs(fountainArchLength[i]);
+
+            double archMidpointX = fountainArchLength[i] + fountainMidpointX;
+            double archMidpointY = fountainMidpointY;
+
+            double topBorder = archMidpointY - archHeight;
+            double bottomBorder = archMidpointY + archHeight;
+
+            double currentDistantX;
+
+            if (fountainSize[i] >= -1) {
+
+                fountainSize[i] -= shrinkingSpeed;
+
+                if(fountainPositionY[i] <= topBorder){
+                    fountainDirection[i] = 'D';
+                }
+                
+                else if(fountainPositionY[i] >= bottomBorder){
+                    fountainDirection[i] = 'U';
+                }
+                
+                if (fountainDirection[i] == 'U'){
+                    fountainPositionY[i] -= veticalSpeed * (fountainSize[i]/fountainBallsMaxSize);
+                }
+                
+                else {
+                    fountainPositionY[i] += veticalSpeed * (fountainSize[i]/fountainBallsMaxSize);
+                }
+
+                if(archHeight < archLength){
+                    currentDistantX = Math.sqrt(((archLength*archLength) - Math.pow(fountainPositionY[i] - archMidpointY, 2)) * (archHeight*archHeight) / (archLength*archLength));
+                } //(b^2-(y-k)^2)(a^2)/(b^2)
+                else{
+                    currentDistantX = Math.sqrt(((archHeight*archHeight) - Math.pow(fountainPositionY[i] - archMidpointY, 2)) * (archLength*archLength) / (archHeight*archHeight));
+                } //(a^2-(y-k)^2)(b^2)/(a^2)
+
+                if (fountainDirection[i] == 'U'){
+                    if(archMidpointX > fountainMidpointX){
+                        fountainPositionX[i] = archMidpointX - currentDistantX;
+                    }
+                    else{
+                        fountainPositionX[i] = archMidpointX + currentDistantX;
+                    }
+                }
+                
+                else {
+                    if(archMidpointX > fountainMidpointX){
+                        fountainPositionX[i] = archMidpointX + currentDistantX;
+                    }
+                    else{
+                        fountainPositionX[i] = archMidpointX - currentDistantX;
+                    }
+                }
+            
+            }
+
+        }
+    }
+
 
     //=============================================================================================================
     //=============================================================================================================
@@ -678,6 +895,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g2.translate(-300, -280);
 
         g2.drawImage(KFCBuffer, 0, 0, this);
+
     }
 
     private void whitenChicken() {
@@ -689,27 +907,27 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         // System.out.println(red);
         // System.out.println(green);
         // System.out.println(blue);
-        if(red < 248 && green < 248 && blue < 248){
-            Color color = new Color(255,255,255, (int) whitenOpacity);
-            floodFill(g, 331, 177, color, babyBuffer);
-            floodFill(g, 309, 220, color, babyBuffer);
-            floodFill(g, 271, 248, color, babyBuffer);
+        // if(red < 248 && green < 248 && blue < 248){
+        //     Color color = new Color(255,255,255, (int) whitenOpacity);
+        //     floodFill(g, 331, 177, color, babyBuffer);
+        //     floodFill(g, 309, 220, color, babyBuffer);
+        //     floodFill(g, 271, 248, color, babyBuffer);
     
-            floodFill(g, 294, 325, color, babyBuffer);
-            floodFill(g, 306, 318, color, babyBuffer);
-            floodFill(g, 312, 317, color, babyBuffer);
-            floodFill(g, 321, 316, color, babyBuffer);
+        //     floodFill(g, 294, 325, color, babyBuffer);
+        //     floodFill(g, 306, 318, color, babyBuffer);
+        //     floodFill(g, 312, 317, color, babyBuffer);
+        //     floodFill(g, 321, 316, color, babyBuffer);
             
-            floodFill(g, 304, 250, color, babyBuffer);
-            floodFill(g, 255, 241, color, babyBuffer);
+        //     floodFill(g, 304, 250, color, babyBuffer);
+        //     floodFill(g, 255, 241, color, babyBuffer);
     
-            floodFill(g, 273, 277, color, babyBuffer);
-            floodFill(g, 322, 284, color, babyBuffer);
-            floodFill(g, 309, 237, color, babyBuffer);
-            floodFill(g, 323, 293, color, babyBuffer);
-            floodFill(g, 307, 203, color, babyBuffer);
-            floodFill(g, 299, 338, color, babyBuffer);
-        }
+        //     floodFill(g, 273, 277, color, babyBuffer);
+        //     floodFill(g, 322, 284, color, babyBuffer);
+        //     floodFill(g, 309, 237, color, babyBuffer);
+        //     floodFill(g, 323, 293, color, babyBuffer);
+        //     floodFill(g, 307, 203, color, babyBuffer);
+        //     floodFill(g, 299, 338, color, babyBuffer);
+        // }
     }
 
     //paint entire image on buffer
@@ -719,7 +937,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             drawBackground(g);
         if(currentStage == Stage.Evolve)
             fadeToBlack(g);
-            drawEffect(g);
+            if(!isWaiting){
+                drawEffect(g);
+            }
         if(isText){
             drawTextbox(g);
             drawText(g);
@@ -735,7 +955,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         //light green background
         g.setColor(new Color(242,254,236));
-        g.fillRect(0, 0, 600, 450);
+        g.fillRect(0, 0, 600, 600);
 
         //color lines background
         for (int i = 0; i < 40; i++) {
@@ -816,22 +1036,28 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
     
     private void drawEffect(Graphics2D g) {    
-        if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY && pillarPositionY[0][pillarBalls] < pillarMidpointY){
-            drawPillar(g);
+        if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY && spiralPositionY[0][spiralBalls] < spiralMidpointY){
+            drawSpiral(g);
         }
-        if(domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && domePositionY[0][domeBalls] > domeMidpointY){
+        if(domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && domePositionY[0][domeBalls] > domeMidpointY && isSpiralDone){
             drawDome(g);
+        }
+        if(ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius && isDomeDone){
+            drawRing(g);
+        }
+        if(fountainSize[fountainBalls] >= 0 &&isRingDone){
+            drawFountain(g);
         }
     }
 
-    private void drawPillar(Graphics2D g) {
+    private void drawSpiral(Graphics2D g) {
         g.setColor(new Color(255,255,255));
-        for (int i = 0; i < pillarLayers; i++) {   
-            for (int j = 0; j < pillarBalls; j++) {
-                if (pillarPositionY[i][pillarBalls] < pillarMidpointY && pillarPositionY[i][pillarBalls] >= pillarEndpointY){
-                    drawCircle(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], (int)pillarSize[i][j]);
-                    if ((int)pillarSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)pillarPositionX[i][j], (int)pillarPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
+        for (int i = 0; i < spiralLayers; i++) {   
+            for (int j = 0; j < spiralBalls; j++) {
+                if (spiralPositionY[i][spiralBalls] < spiralMidpointY && spiralPositionY[i][spiralBalls] >= spiralEndpointY){
+                    drawCircle(g, (int)spiralPositionX[i][j], (int)spiralPositionY[i][j], (int)spiralSize[i][j]);
+                    if ((int)spiralSize[i][j] > 1) {   
+                        floodFillBorder(g, (int)spiralPositionX[i][j], (int)spiralPositionY[i][j], new Color[]{new Color(255,0,0)}, new Color(255,255,255), mainBuffer);
                     }
                 }
             }
@@ -842,11 +1068,37 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < domeLayers; i++) {   
             for (int j = 0; j < domeBalls; j++) {
-                if (domePositionY[i][domeBalls] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
+                if (domePositionY[i][j] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
                     drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
                     if ((int)domeSize[i][j] > 1) {   
-                        //floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), buffer);
+                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
                     }
+                }
+            }
+        }
+    }
+
+    private void drawRing(Graphics2D g) {
+        g.setColor(new Color(255,255,255));
+        for (int i = 0; i < ringLayers; i++) {   
+            for (int j = 0; j < ringBalls; j++) {
+                if (ringPositionY[i][ringBalls] < ringMidpointY - ringFinalRadius){
+                    drawCircle(g, (int)ringPositionX[i][j], (int)ringPositionY[i][j], (int)ringSize[i][j]);
+                    if ((int)ringSize[i][j] > 1 && (int)ringPositionX[i][j] > 0 && (int)ringPositionX[i][j] < 600 && (int)ringPositionY[i][j] > 0 && (int)ringPositionY[i][j] < 600) {   
+                        floodFillBorder(g, (int)ringPositionX[i][j], (int)ringPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
+                    }
+                }
+            }
+        }
+    }
+
+    private void drawFountain(Graphics2D g) {
+        g.setColor(new Color(255,255,255));
+        for (int i = 0; i < fountainBalls; i++) {   
+            if (fountainPositionY[i] < fountainMidpointY){
+                drawCircle(g, (int)fountainPositionX[i], (int)fountainPositionY[i], (int)fountainSize[i]);
+                if ((int)fountainSize[i] > 1) {   
+                    floodFillBorder(g, (int)fountainPositionX[i], (int)fountainPositionY[i], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
                 }
             }
         }
