@@ -211,13 +211,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 lineCnt[1] += letterVelocity * elapsedTime / 1000.0;
             }//5.5 - 6.5 second
             else if(timer <= 9.5 && tranparency < 255){//dark screen transition at the 4th second
-                isText = true;
+                isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
             }//6.5 - 99999999 second
             else if(timer <= 12.5 && timer * 1000 % 1 == 0 || !isSpiralDone){
                 isStarStart = true;
-                isText = true;
                 currentStage = Stage.Evolve;
                 if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){ //Moving each balls in the layer of the spiral
                     isWaiting = false;
@@ -230,7 +229,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
             else if(timer <= 15.5 && timer * 1000 % 1 == 0 || !isDomeDone){ //Moving each balls in the layer of the spiral and Make chicken white
-                isText = true;
                 currentStage = Stage.Evolve;
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
                     isWaiting = false;
@@ -243,7 +241,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
             else if(timer <= 18.5 && timer * 1000 % 1 == 0 || !isRingDone){
-                isText = true;
                 currentStage = Stage.Evolve;
                 if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
                     isWaiting = false;
@@ -255,7 +252,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }
             else if(timer <= 21.5 && timer * 1000 % 1 == 0 || !isFountainDone){
-                isText = true;
                 currentStage = Stage.Evolve;
                 if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
                     isWaiting = false;
@@ -1132,27 +1128,27 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         // System.out.println(red);
         // System.out.println(green);
         // System.out.println(blue);
-        // if(red < 248 && green < 248 && blue < 248){
-        //     Color color = new Color(255,255,255, (int) whitenOpacity);
-        //     floodFill(g, 331, 177, color, babyBuffer);
-        //     floodFill(g, 309, 220, color, babyBuffer);
-        //     floodFill(g, 271, 248, color, babyBuffer);
+        if(red < 248 && green < 248 && blue < 248){
+            Color color = new Color(255,255,255, (int) whitenOpacity);
+            floodFill(g, 331, 177, color, babyBuffer);
+            floodFill(g, 309, 220, color, babyBuffer);
+            floodFill(g, 271, 248, color, babyBuffer);
     
-        //     floodFill(g, 294, 325, color, babyBuffer);
-        //     floodFill(g, 306, 318, color, babyBuffer);
-        //     floodFill(g, 312, 317, color, babyBuffer);
-        //     floodFill(g, 321, 316, color, babyBuffer);
+            floodFill(g, 294, 325, color, babyBuffer);
+            floodFill(g, 306, 318, color, babyBuffer);
+            floodFill(g, 312, 317, color, babyBuffer);
+            floodFill(g, 321, 316, color, babyBuffer);
             
-        //     floodFill(g, 304, 250, color, babyBuffer);
-        //     floodFill(g, 255, 241, color, babyBuffer);
+            floodFill(g, 304, 250, color, babyBuffer);
+            floodFill(g, 255, 241, color, babyBuffer);
     
-        //     floodFill(g, 273, 277, color, babyBuffer);
-        //     floodFill(g, 322, 284, color, babyBuffer);
-        //     floodFill(g, 309, 237, color, babyBuffer);
-        //     floodFill(g, 323, 293, color, babyBuffer);
-        //     floodFill(g, 307, 203, color, babyBuffer);
-        //     floodFill(g, 299, 338, color, babyBuffer);
-        // }
+            floodFill(g, 273, 277, color, babyBuffer);
+            floodFill(g, 322, 284, color, babyBuffer);
+            floodFill(g, 309, 237, color, babyBuffer);
+            floodFill(g, 323, 293, color, babyBuffer);
+            floodFill(g, 307, 203, color, babyBuffer);
+            floodFill(g, 299, 338, color, babyBuffer);
+        }
     }
 
     //paint entire image on buffer
