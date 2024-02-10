@@ -4,8 +4,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
@@ -15,23 +13,19 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class Animation extends JPanel implements Runnable,MouseListener{
+public class Animation extends JPanel implements Runnable{
     //Buffers
     BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage effectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-
-    public Animation(){
-        addMouseListener(this);
-    }
+    BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 
     public static void main(String[] args) {
         Animation m = new Animation();
         JFrame f = new JFrame();
         f.add(m);
-        f.setTitle("Lab5 65050257");
+        f.setTitle("Animation");
         m.setPreferredSize(new Dimension(600, 600));
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.pack();
@@ -153,6 +147,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     // =============================================================================
     // =============================================================================
 
+
+    //running animation thread
     public void run() {
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
@@ -167,8 +163,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         initializeRing();
         initializeFountain();
 
-        drawBabyBuffer();
-        drawWhiteKFC(false);
+        initializeBabyBuffer();
+        drawKFC(true);
         
         while (true) {
             currentTime = System.currentTimeMillis();
@@ -242,31 +238,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             else if(!isStarDone || chickenScale > 0.1){
                 //Scaling Chicken and KFC Bucket inversely
                 currentStage = Stage.Evolve;
-                chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
-                chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
-                if(chickenScale >= 1){
-                    chickenScale = 1;
-                    chickenScaleVelocity = -chickenScaleVelocity;
-                    chickenScaleAccelerate = -chickenScaleAccelerate;
-                }
-                else if(chickenScale <= 0.0000000000000000000001){
-                    chickenScale = 0.0000000000000000000001;    
-                    chickenScaleVelocity = -chickenScaleVelocity;
-                    chickenScaleAccelerate = -chickenScaleAccelerate;
-                }
-
-                KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
-                KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
-                if(KFCScale >= 1){
-                    KFCScale = 1;
-                    KFCScaleVelocity = -KFCScaleVelocity;
-                    KFCScaleAccelerate = -KFCScaleAccelerate;
-                }
-                else if(KFCScale <= 0.0000000000000000000001){
-                    KFCScale = 0.0000000000000000000001;
-                    KFCScaleVelocity = -KFCScaleVelocity;
-                    KFCScaleAccelerate = -KFCScaleAccelerate;
-                }
+                updateChickenScale(elapsedTime);
+                updateKFCScale(elapsedTime);
                 if(isStarStart == true){
                     updateStarMovement();
                     updateStarColor();
@@ -293,8 +266,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     isKFC = true;
                 }
                 if(isKFC){
-                    drawWhiteKFC(true);
                     isEvolving = false;
+                    drawKFC(false);
                 }
             }
             else if(!isFountainDone){
@@ -328,6 +301,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    //initialize value of global variable for animation
     private void initializeAnimationVar() {
         font = new Font("Segoe UI", Font.PLAIN, 36);
 
@@ -425,270 +399,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         isFlashbangDone = false;
     }
 
-    private void drawKFC() {
-        Graphics2D g = KFCBuffer.createGraphics();
-
-        g.setColor(Color.BLACK);
-        //rim
-        drawCurve(g, 71+165, 65+165, 100+165, 78+165, 178+165, 78+165, 208+165, 65+165);
-        drawCurve(g, 71+165, 62+165, 100+165, 75+165, 178+165, 75+165, 208+165, 62+165);
-        //red bar 1
-        drawCurve(g, 82+165, 71+165, 82+165, 71+165, 92+165, 144+165, 92+165, 144+165);
-        drawCurve(g, 92+165, 144+165, 92+165, 144+165, 105+165, 148+165, 105+165, 148+165);
-        drawCurve(g, 105+165, 148+165, 105+165, 148+165, 97+165, 73+165, 97+165, 73+165);
-        //red bar 2
-        drawCurve(g, 189+165, 71+165, 189+165, 71+165, 182+165, 145+165, 182+165, 145+165);
-        drawCurve(g, 182+165, 145+165, 182+165, 145+165, 191+165, 141+165, 191+165, 141+165);
-        drawCurve(g, 191+165, 141+165, 191+165, 141+165, 202+165, 68+165, 202+165, 68+165);
-
-        drawCurve(g, 97+165, 45+165, 102+165, 47+165, 106+165, 43+165, 112+165, 45+165);
-        drawCurve(g, 112+165, 45+165, 117+165, 52+165, 132+165, 50+165, 132+165, 50+165);
-        drawCurve(g, 132+165, 50+165, 132+165, 50+165, 136+165, 56+165, 136+165, 56+165);
-
-        drawCurve(g, 120+165, 70+165, 124+165, 65+165, 130+165, 65+165, 130+165, 65+165);
-        drawCurve(g, 130+165, 65+165, 130+165, 65+165, 136+165, 56+165, 136+165, 56+165);
-        drawCurve(g, 136+165, 56+165, 143+165, 49+165, 158+165, 50+165, 158+165, 50+165);
-        drawCurve(g, 158+165, 50+165, 161+165, 51+165, 157+165, 58+165, 157+165, 58+165);
-        drawCurve(g, 157+165, 58+165, 157+165, 58+165, 161+165, 66+165, 153+165, 72+165);
-
-        drawCurve(g, 157+165, 58+165, 163+165, 64+165, 171+165, 61+165, 171+165, 61+165);
-        drawCurve(g, 171+165, 61+165, 176+165, 63+165, 179+165, 68+165, 179+165, 68+165);
-
-        drawCurve(g, 151+165, 50+165, 145+165, 47+165, 144+165, 40+165, 144+165, 40+165);
-
-        drawCurve(g, 149+165, 33+165, 155+165, 28+165, 167+165, 32+165, 167+165, 32+165);
-        drawCurve(g, 167+165, 32+165, 167+165, 32+165, 178+165, 40+165, 178+165, 40+165);
-        drawCurve(g, 178+165, 40+165, 178+165, 40+165, 179+165, 44+165, 179+165, 44+165);
-        drawCurve(g, 179+165, 44+165, 190+165, 50+165, 197+165, 65+165, 197+165, 65+165);
-
-        drawCurve(g, 149+165, 25+165, 151+165, 33+165, 144+165, 40+165, 144+165, 40+165);
-        drawCurve(g, 144+165, 40+165, 143+165, 49+165, 132+165, 50+165, 132+165, 50+165);
-        //Sander
-        drawCurve(g, 132+165, 93+165, 138+165, 84+165, 155+165, 85+165, 160+165, 97+165);
-        drawCurve(g, 160+165, 97+165, 160+165, 97+165, 163+165, 101+165, 161+165, 107+165);
-        drawCurve(g, 161+165, 107+165, 161+165, 107+165, 158+165, 112+165, 158+165, 112+165);
-        drawCurve(g, 161+165, 107+165, 161+165, 107+165, 156+165, 99+165, 156+165, 99+165);
-        drawCurve(g, 161+165, 107+165, 164+165, 107+165, 161+165, 120+165, 157+165, 120+165);
-        drawCurve(g, 157+165, 120+165, 157+165, 128+165, 154+165, 132+165, 148+165, 133+165);
-        drawCurve(g, 148+165, 133+165, 148+165, 133+165, 145+165, 138+165, 145+165, 138+165);
-        drawCurve(g, 145+165, 138+165, 145+165, 138+165, 139+165, 132+165, 140+165, 124+165);
-        drawCurve(g, 139+165, 132+165, 132+165, 132+165, 127+165, 109+165, 129+165, 109+165);
-        drawCurve(g, 129+165, 109+165, 124+165, 103+165, 128+165, 97+165, 128+165, 97+165);
-
-        drawCurve(g, 129+165, 109+165, 125+165, 108+165, 124+165, 109+165, 130+165, 119+165);
-
-        drawCurve(g, 128+165, 97+165, 128+165, 97+165, 125+165, 95+165, 125+165, 95+165);
-        drawCurve(g, 125+165, 95+165, 135+165, 92+165, 144+165, 96+165, 144+165, 96+165);
-        drawCurve(g, 144+165, 96+165, 135+165, 94+165, 130+165, 99+165, 129+165, 109+165);
-
-        drawCurve(g, 135+165, 122+165, 142+165, 126+165, 147+165, 126+165, 152+165, 121+165);
-
-        drawCurve(g, 141+165, 116+165, 142+165, 120+165, 147+165, 120+165, 148+165, 116+165);
-        drawCurve(g, 148+165, 116+165, 148+165, 116+165, 152+165, 121+165, 152+165, 121+165);
-        drawCurve(g, 135+165, 122+165, 135+165, 122+165, 141+165, 116+165, 141+165, 116+165);
-
-        drawCurve(g, 135+165, 106+165, 135+165, 106+165, 140+165, 110+165, 140+165, 110+165);
-        drawCurve(g, 136+165, 113+165, 136+165, 113+165, 140+165, 110+165, 140+165, 110+165);
-
-        drawCurve(g, 153+165, 106+165, 153+165, 106+165, 148+165, 110+165, 148+165, 110+165);
-        drawCurve(g, 153+165, 114+165, 153+165, 114+165, 148+165, 110+165, 148+165, 110+165);
-
-        //Logo
-        drawCurve(g, 130+165, 160+160, 130+165, 160+160, 129+165, 168+160, 129+165, 168+160);
-        drawCurve(g, 129+165, 168+160, 129+165, 168+160, 137+165, 169+160, 137+165, 169+160);
-        drawCurve(g, 137+165, 169+160, 137+165, 169+160, 138+165, 160+160, 138+165, 160+160);
-
-        drawCurve(g, 142+165, 169+160, 142+165, 169+160, 143+165, 160+160, 143+165, 160+160);
-        drawCurve(g, 143+165, 160+160, 143+165, 160+160, 150+165, 160+160, 150+165, 160+160);
-        drawCurve(g, 143+165, 164+160, 143+165, 164+160, 148+165, 164+160, 148+165, 164+160);
-
-        drawCurve(g, 155+165, 168+160, 150+165, 166+160, 152+165, 159+160, 157+165, 159+160);
-        drawCurve(g, 155+165, 168+160, 162+165, 167+160, 163+165, 162+160, 157+165, 159+160);
-        
-        floodFill(g, 255, 257, Color.RED, KFCBuffer);
-        floodFill(g, 357, 268, Color.RED, KFCBuffer);
-        floodFill(g, 269, 224, Color.ORANGE, KFCBuffer);
-        floodFill(g, 288, 198, Color.ORANGE, KFCBuffer);
-        floodFill(g, 331, 211, Color.ORANGE, KFCBuffer);
-        floodFill(g, 335, 193, Color.ORANGE, KFCBuffer);
-        floodFill(g, 309, 227, Color.ORANGE, KFCBuffer);
-        floodFill(g, 329, 232, Color.ORANGE, KFCBuffer);
-        floodFill(g, 306, 215, Color.ORANGE, KFCBuffer);
-        isKFC = false;
-    }
-
-    private void drawWhiteKFC(boolean isBlack) {
-        Graphics2D g = KFCBuffer.createGraphics();
-        
-        g.setColor(new Color(255,255,255,1));
-        g.fillRect(0, 0, 600, 600);
-        if(isBlack){
-            g.setColor(Color.black);
-        }
-        else{
-            g.setColor(new Color(255, 255, 255));
-        }
-
-        //left
-        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 90+165, 168+165, 90+165, 168+165);
-        //bottom
-        drawCurve(g, 90+165, 168+165, 122+165, 181+165, 159+165, 181+165, 190+165, 168+165);
-        //right
-        drawCurve(g, 190+165, 168+165, 190+165, 168+165, 205+165, 67+165, 205+165, 67+165);
-
-        //left rim
-        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 74+165, 62+165, 74+165, 62+165);
-        //right rim
-        drawCurve(g, 202+165, 62+165, 202+165, 62+165, 205+165, 67+165, 205+165, 67+165);
-
-        //chicken
-        drawCurve(g, 74+165, 62+165, 74+165, 62+165, 79+165, 54+165, 79+165, 54+165);
-        drawCurve(g, 79+165, 54+165, 79+165, 54+165, 82+165, 53+165, 83+165, 55+165);
-        drawCurve(g, 83+165, 55+165, 83+165, 55+165, 97+165, 45+165, 97+165, 45+165);
-
-        drawCurve(g, 97+165, 45+165, 92+165, 39+165, 91+165, 36+165, 97+165, 34+165);
-        drawCurve(g, 97+165, 34+165, 97+165, 34+165, 107+165, 31+165, 111+165, 23+165);
-        drawCurve(g, 111+165, 23+165, 111+165, 23+165, 129+165, 17+165, 129+165, 17+165);
-        drawCurve(g, 129+165, 17+165, 129+165, 17+165, 149+165, 25+165, 149+165, 25+165);
-
-        drawCurve(g, 149+165, 25+165, 149+165 ,25+165, 150+165, 21+165, 157+165, 25+165);
-        drawCurve(g, 157+165, 25+165, 163+165, 21+165, 171+165, 21+165, 182+165, 30+165);
-        drawCurve(g, 182+165, 30+165, 187+165, 36+165, 187+165, 40+165, 183+165, 43+165);
-        drawCurve(g, 183+165, 43+165, 194+165, 42+165, 202+165, 49+165, 202+165, 62+165);
-        if(isBlack){
-            drawKFC();
-        }else{
-            floodFill(g, 143+165, 82+165, Color.WHITE, KFCBuffer);
-        }
-    }
-
-    private void drawBabyBuffer() {
-        Graphics2D g = babyBuffer.createGraphics();
-        
-        g.setColor(new Color(255,255,255,1));
-        g.fillRect(0, 0, 600, 600);
-        
-        //right face
-        g.setColor(Palette.BLACK.getColor());
-        drawCurve(g, 62+250, 54+150, 62+250, 54+150, 65+250, 43+150, 73+250, 39+150);
-        drawCurve(g, 73+250, 39+150, 73+250, 39+150, 75+250, 42+150, 71+250, 55+150);
-        drawCurve(g, 71+250, 55+150, 71+250, 55+150, 75+250, 52+150, 78+250, 53+150);
-        drawCurve(g, 78+250, 53+150, 78+250, 53+150, 78+250, 55+150, 75+250, 60+150);
-        drawCurve(g, 75+250, 60+150, 110+250, 73+150, 106+250, 113+150, 69+250, 122+150);
-        //left face
-        drawCurve(g, 62+250, 54+150, 40+250, 51+150, 15+250, 60+150, 4+250, 78+150);
-        //left eye
-        drawElipse(g, 5+250, 86+150, 4, 10);
-        drawElipse(g, 5+250, 82+150, 4, 6);
-        //drawElipse(g, 6, 92, 2, 4);
-        //right eye
-        drawElipse(g, 55+250, 94+150, 8, 9);
-        drawElipse(g, 55+250, 91+150, 5, 6);
-        //drawElipse(g, 57, 99, 4, 4);
-        //left face
-        drawCurve(g, 6+250, 98+150, 6+250, 98+150, 13+250, 114+150, 27+250, 118+150);
-        //bottom
-        drawCurve(g, 20+250, 136+150, 25+250, 173+150, 70+250, 173+150, 87+250, 145+150);
-        drawCurve(g, 87+250, 145+150, 87+250, 145+150, 81+250, 138+150, 81+250, 138+150);
-        g.setColor(Palette.HARDPART.getColor());
-        //beak
-        drawCurve(g, 10+250, 101+150, 17+250, 105+150, 30+250, 106+150, 37+250, 102+150);
-        drawCurve(g, 37+250, 102+150, 36+250, 98+150, 27+250, 97+150, 25+250, 93+150);
-        drawCurve(g, 25+250, 93+150, 23+250, 90+150, 19+250, 90+150, 16+250, 93+150);
-        drawCurve(g, 16+250, 93+150, 11+250, 95+150, 8+250, 98+150, 10+250, 101+150);
-        g.setColor(Palette.BLACK.getColor());
-        //left feet?
-        drawCurve(g, 44+250, 164+150, 44+250, 169+150, 41+250, 172+150, 41+250, 172+150);
-        drawCurve(g, 41+250, 172+150, 26+250, 169+150, 21+250, 172+150, 18+250, 178+150);
-        drawCurve(g, 18+250, 178+150, 16+250, 184+150, 17+250, 186+150, 21+250, 187+150);
-        drawCurve(g, 21+250, 187+150, 26+250, 179+150, 33+250, 179+150, 33+250, 179+150);
-
-        drawCurve(g, 40+250, 175+150, 30+250, 177+150, 27+250, 186+150, 35+250, 193+150);
-        drawCurve(g, 35+250, 193+150, 36+250, 184+150, 38+250, 183+150, 42+250, 183+150);
-
-        drawCurve(g, 47+250, 177+150, 40+250, 180+150, 38+250, 189+150, 46+250, 195+150);
-        drawCurve(g, 46+250, 195+150, 49+250, 196+150, 50+250, 195+150, 49+250, 187+150);
-        drawCurve(g, 49+250, 187+150, 51+250, 181+150, 54+250, 179+150, 59+250, 182+150);
-        drawCurve(g, 59+250, 182+150, 62+250, 183+150, 64+250, 181+150, 62+250, 179+150);
-        drawCurve(g, 62+250, 179+150, 61+250, 175+150, 58+250, 173+150, 52+250, 174+150);
-        drawCurve(g, 52+250, 174+150, 48+250, 174+150, 47+250, 172+150, 50+250, 165+150);
-        //right feet?
-        drawCurve(g, 53+250, 164+150, 55+250, 165+150, 52+250, 172+150, 60+250, 172+150);
-        drawCurve(g, 58+250, 165+150, 60+250, 173+150, 60+250, 176+150, 70+250, 171+150);
-        drawCurve(g, 65+250, 164+150, 66+250, 169+150, 69+250, 171+150, 75+250, 170+150);
-        drawCurve(g, 74+250, 170+150, 80+250, 165+150, 79+250, 162+150, 76+250, 163+150);
-        drawCurve(g, 76+250, 163+150, 71+250, 163+150, 71+250, 163+150, 71+250, 161+150);
-
-        g.setColor(Palette.BLACK.getColor());
-        //Comb
-        drawCurve(g, 53+250, 53+150, 46+250, 42+150, 54+250, 23+150, 54+250, 23+150);
-        drawCurve(g, 54+250, 23+150, 54+250, 23+150, 61+250, 29+150, 62+250, 39+150);
-        drawCurve(g, 60+250, 46+150, 60+250, 46+150, 65+250, 17+150, 96+250, 1+150);
-        drawCurve(g, 96+250, 1+150, 101+250, 8+150, 90+250, 42+150, 90+250, 42+150);
-        drawCurve(g, 90+250, 42+150, 90+250, 42+150, 102+250, 32+150, 118+250, 30+150);
-        drawCurve(g, 118+250, 30+150, 118+250, 30+150, 109+250, 51+150, 78+250, 61+150);
-        //left wing?
-        drawCurve(g, 27+250, 118+150, 18+250, 118+150, 9+250, 125+150, 9+250, 125+150);
-        drawCurve(g, 9+250, 125+150, 9+250, 125+150, 15+250, 125+150, 15+250, 125+150);
-        drawCurve(g, 15+250, 125+150, 15+250, 125+150, 11+250, 131+150, 11+250, 131+150);
-        drawCurve(g, 11+250, 131+150, 11+250, 131+150, 17+250, 131+150, 17+250, 131+150);
-        drawCurve(g, 17+250, 131+150, 17+250, 131+150, 15+250, 138+150, 15+250, 138+150);
-        drawCurve(g, 15+250, 138+150, 15+250, 138+150, 21+250, 136+150, 21+250, 136+150);
-        drawCurve(g, 21+250, 136+150, 21+250, 136+150, 24+250, 141+150, 24+250, 141+150);
-        drawCurve(g, 24+250, 141+150, 24+250, 141+150, 31+250, 130+150, 31+250, 130+150);
-        drawCurve(g, 24+250, 141+150, 24+250, 141+150, 281, 280, 281, 280);
-        //right wing?
-        drawCurve(g, 46+250, 133+150, 46+250, 133+150, 51+250, 145+150, 51+250, 145+150);
-        drawCurve(g, 51+250, 145+150, 51+250, 145+150, 53+250, 138+150, 53+250, 138+150);
-        drawCurve(g, 53+250, 138+150, 53+250, 138+150, 62+250, 149+150, 62+250, 149+150);
-        drawCurve(g, 62+250, 149+150, 62+250, 149+150, 62+250, 142+150, 62+250, 142+150);
-        drawCurve(g, 62+250, 142+150, 62+250, 142+150, 73+250, 149+150, 73+250, 149+150);
-        drawCurve(g, 73+250, 149+150, 73+250, 149+150, 73+250, 140+150, 73+250, 140+150);
-        drawCurve(g, 73+250, 140+150, 75+250, 143+150, 81+250, 142+150, 81+250, 142+150);
-        drawCurve(g, 81+250, 142+150, 81+250, 142+150, 79+250, 136+150, 79+250, 136+150);
-        drawCurve(g, 81+250, 138+150, 81+250, 138+150, 89+250, 137+150, 89+250, 137+150);
-        drawCurve(g, 89+250, 137+150, 89+250, 137+150, 83+250, 128+150, 83+250, 128+150);
-        drawCurve(g, 83+250, 128+150, 83+250, 128+150, 87+250, 125+150, 87+250, 125+150);
-        drawCurve(g, 87+250, 125+150, 87+250, 125+150, 76+250, 120+150, 76+250, 120+150);
-
-        g.setColor(Palette.FEATHER.getColor());
-        //left upper wing
-        drawCurve(g, 281, 280, 281, 280, 35+250, 123+150, 35+250, 123+150);
-        drawCurve(g, 35+250, 123+150, 35+250, 123+150, 32+250, 124+150, 32+250, 124+150);
-        drawCurve(g, 32+250, 124+150, 32+250, 124+150, 28+250, 119+150, 28+250, 119+150);
-        //right upper wing
-        drawCurve(g, 46+250, 133+150, 46+250, 133+150, 44+250, 122+150, 44+250, 122+150);
-        drawCurve(g, 44+250, 122+150, 44+250, 122+150, 48+250, 127+150, 48+250, 127+150);
-        drawCurve(g, 48+250, 127+150, 48+250, 127+150, 48+250, 121+150, 48+250, 121+150);
-        drawCurve(g, 48+250, 121+150, 48+250, 121+150, 57+250, 128+150, 57+250, 128+150);
-        drawCurve(g, 57+250, 128+150, 57+250, 128+150, 56+250, 123+150, 56+250, 123+150);
-        drawCurve(g, 56+250, 123+150, 56+250, 123+150, 68+250, 122+150, 68+250, 122+150);
-
-        //g.scale(0.5, 0.5);
-        floodFillBorder(g, 331, 177, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()}, Palette.FEATHER.getColor(), babyBuffer);
-        floodFillBorder(g, 309, 220, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()
-                                                    ,Palette.HARDPART.getColor(), Palette.HARDPART_OUTLINE.getColor()
-                                                    ,Palette.FEATHER.getColor()}, Palette.BODY.getColor(), babyBuffer);
-        floodFillBorder(g, 271, 248, new Color[]{Palette.HARDPART.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
-
-        floodFillBorder(g, 294, 325, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
-        floodFillBorder(g, 306, 318, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
-        floodFillBorder(g, 312, 317, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
-        floodFillBorder(g, 321, 316, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
-        
-        floodFillBorder(g, 304, 250, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor(), babyBuffer);
-        floodFillBorder(g, 255, 241, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor(), babyBuffer);
-
-        floodFillBorder(g, 273, 277, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER.getColor()}, Palette.FEATHER.getColor(), babyBuffer);
-        floodFillBorder(g, 322, 284, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER.getColor()}, Palette.FEATHER.getColor(), babyBuffer);
-
-        floodFillBorder(g, 255, 232, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
-        floodFillBorder(g, 305, 240, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
-        isDraw = true;
-    }
-
+    //initialize value for position for each star 
     private void initializeStar() {
-
         double layerGaps = 0;
         double starBaseInnerRadius = 11.5;
         double starBaseOuterRadius = 15;
@@ -711,9 +423,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             }
             layerGaps += 3.2;
         }
-
     }
 
+    //initialize position and direction of balls for spiral
     private void initializeSpiral() {
 
         //Set a horizontal position of each balls in the layer of the spiral
@@ -737,6 +449,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    //initialize position of each layer of the dome
     private void initializeDome() {
 
         //Set a vertical position of each layer of the dome
@@ -765,7 +478,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 ringPositionY[i][j] = ringMidpointY - (radius * Math.sin(Math.PI * 2 * ringAngle[i][j] / 360));
             }
         }
-
     }
 
     private void initializeFountain() {
@@ -792,6 +504,282 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         fountainPositionY[fountainBalls] = fountainMidpointY + archMaxGaps;
         fountainDirection[fountainBalls] = 'U';
         
+    }
+
+    private void initializeBabyBuffer() {
+        Graphics2D g = babyBuffer.createGraphics();
+        
+        g.setColor(new Color(255,255,255,1));
+        g.fillRect(0, 0, 600, 600);
+        
+        //right face
+        g.setColor(Palette.BLACK.getColor());
+        drawCurve(g, 312, 204, 312, 204, 315, 193, 323, 189);
+        drawCurve(g, 323, 189, 323, 189, 325, 192, 321, 205);
+        drawCurve(g, 321, 205, 321, 205, 325, 202, 328, 203);
+        drawCurve(g, 328, 203, 328, 203, 328, 205, 325, 210);
+        drawCurve(g, 325, 210, 360, 223, 356, 263, 319, 272);
+
+        //left face
+        drawCurve(g, 312, 204, 290, 201, 265, 210, 254, 228);
+
+        //left eye
+        drawElipse(g, 255, 236, 4, 10);
+        drawElipse(g, 255, 232, 4, 6);
+
+        //right eye
+        drawElipse(g, 305, 244, 8, 9);
+        drawElipse(g, 305, 241, 5, 6);
+
+        //left face
+        drawCurve(g, 256, 248, 256, 248, 263, 264, 277, 268);
+
+        //bottom
+        drawCurve(g, 270, 286, 275, 323, 320, 323, 337, 295);
+        drawCurve(g, 337, 295, 337, 295, 331, 288, 331, 288);
+        g.setColor(Palette.HARDPART.getColor());
+
+        //beak
+        drawCurve(g, 260, 251, 267, 255, 280, 256, 287, 252);
+        drawCurve(g, 287, 252, 286, 248, 277, 247, 275, 243);
+        drawCurve(g, 275, 243, 273, 240, 269, 240, 266, 243);
+        drawCurve(g, 266, 243, 261, 245, 258, 248, 260, 251);
+        g.setColor(Palette.BLACK.getColor());
+
+        //left feet?
+        drawCurve(g, 294, 314, 294, 319, 291, 322, 291, 322);
+        drawCurve(g, 291, 322, 276, 319, 271, 322, 268, 328);
+        drawCurve(g, 268, 328, 266, 334, 267, 336, 271, 337);
+        drawCurve(g, 271, 337, 276, 329, 283, 329, 283, 329);
+
+        drawCurve(g, 290, 325, 280, 327, 277, 336, 285, 343);
+        drawCurve(g, 285, 343, 286, 334, 288, 333, 292, 333);
+
+        drawCurve(g, 297, 327, 290, 330, 288, 339, 296, 345);
+        drawCurve(g, 296, 345, 299, 346, 300, 345, 299, 337);
+        drawCurve(g, 299, 337, 301, 331, 304, 329, 309, 332);
+        drawCurve(g, 309, 332, 312, 333, 314, 331, 312, 329);
+        drawCurve(g, 312, 329, 311, 325, 308, 323, 302, 324);
+        drawCurve(g, 302, 324, 298, 324, 297, 322, 300, 315);
+
+        //right feet?
+        drawCurve(g, 303, 314, 305, 315, 302, 322, 310, 322);
+        drawCurve(g, 308, 315, 310, 323, 310, 326, 320, 321);
+        drawCurve(g, 315, 314, 316, 319, 319, 321, 325, 320);
+        drawCurve(g, 324, 320, 330, 315, 329, 312, 326, 313);
+        drawCurve(g, 326, 313, 321, 313, 321, 313, 321, 311);
+
+        g.setColor(Palette.BLACK.getColor());
+        //Comb
+        drawCurve(g, 303, 203, 296, 192, 304, 173, 304, 173);
+        drawCurve(g, 304, 173, 304, 173, 311, 179, 312, 189);
+        drawCurve(g, 310, 196, 310, 196, 315, 167, 346, 151);
+        drawCurve(g, 346, 151, 351, 158, 340, 192, 340, 192);
+        drawCurve(g, 340, 192, 340, 192, 352, 182, 368, 180);
+        drawCurve(g, 368, 180, 368, 180, 359, 201, 328, 211);
+
+        //left wing?
+        drawCurve(g, 277, 268, 268, 268, 259, 275, 259, 275);
+        drawCurve(g, 259, 275, 259, 275, 265, 275, 265, 275);
+        drawCurve(g, 265, 275, 265, 275, 261, 281, 261, 281);
+        drawCurve(g, 261, 281, 261, 281, 267, 281, 267, 281);
+        drawCurve(g, 267, 281, 267, 281, 265, 288, 265, 288);
+        drawCurve(g, 265, 288, 265, 288, 271, 286, 271, 286);
+        drawCurve(g, 271, 286, 271, 286, 274, 291, 274, 291);
+        drawCurve(g, 274, 291, 274, 291, 281, 280, 281, 280);
+        drawCurve(g, 274, 291, 274, 291, 281, 280, 281, 280);
+
+        //right wing?
+        drawCurve(g, 296, 283, 296, 283, 301, 295, 301, 295);
+        drawCurve(g, 301, 295, 301, 295, 303, 288, 303, 288);
+        drawCurve(g, 303, 288, 303, 288, 312, 299, 312, 299);
+        drawCurve(g, 312, 299, 312, 299, 312, 292, 312, 292);
+        drawCurve(g, 312, 292, 312, 292, 323, 299, 323, 299);
+        drawCurve(g, 323, 299, 323, 299, 323, 290, 323, 290);
+        drawCurve(g, 323, 290, 325, 293, 331, 292, 331, 292);
+        drawCurve(g, 331, 292, 331, 292, 329, 286, 329, 286);
+        drawCurve(g, 331, 288, 331, 288, 339, 287, 339, 287);
+        drawCurve(g, 339, 287, 339, 287, 333, 278, 333, 278);
+        drawCurve(g, 333, 278, 333, 278, 337, 275, 337, 275);
+        drawCurve(g, 337, 275, 337, 275, 326, 270, 326, 270);
+
+        g.setColor(Palette.FEATHER.getColor());
+        //left upper wing
+        drawCurve(g, 281, 280, 281, 280, 285, 273, 285, 273);
+        drawCurve(g, 285, 273, 285, 273, 282, 274, 282, 274);
+        drawCurve(g, 282, 274, 282, 274, 278, 269, 278, 269);
+
+        //right upper wing
+        drawCurve(g, 296, 283, 296, 283, 294, 272, 294, 272);
+        drawCurve(g, 294, 272, 294, 272, 298, 277, 298, 277);
+        drawCurve(g, 298, 277, 298, 277, 298, 271, 298, 271);
+        drawCurve(g, 298, 271, 298, 271, 307, 278, 307, 278);
+        drawCurve(g, 307, 278, 307, 278, 306, 273, 306, 273);
+        drawCurve(g, 306, 273, 306, 273, 318, 272, 318, 272);
+
+        //coloring
+        floodFillBorder(g, 331, 177, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()}, Palette.FEATHER.getColor(), babyBuffer);
+        floodFillBorder(g, 309, 220, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER_OUTLINE.getColor()
+                                                    ,Palette.HARDPART.getColor(), Palette.HARDPART_OUTLINE.getColor()
+                                                    ,Palette.FEATHER.getColor()}, Palette.BODY.getColor(), babyBuffer);
+        floodFillBorder(g, 271, 248, new Color[]{Palette.HARDPART.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
+
+        floodFillBorder(g, 294, 325, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
+        floodFillBorder(g, 306, 318, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
+        floodFillBorder(g, 312, 317, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
+        floodFillBorder(g, 321, 316, new Color[]{Palette.BLACK.getColor(), Palette.HARDPART_OUTLINE.getColor()}, Palette.HARDPART.getColor(), babyBuffer);
+        
+        floodFillBorder(g, 304, 250, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor(), babyBuffer);
+        floodFillBorder(g, 255, 241, new Color[]{Palette.BLACK.getColor()}, Palette.BLACK.getColor(), babyBuffer);
+
+        floodFillBorder(g, 273, 277, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER.getColor()}, Palette.FEATHER.getColor(), babyBuffer);
+        floodFillBorder(g, 322, 284, new Color[]{Palette.BLACK.getColor(),Palette.FEATHER.getColor()}, Palette.FEATHER.getColor(), babyBuffer);
+
+        floodFillBorder(g, 255, 232, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
+        floodFillBorder(g, 305, 240, new Color[]{Palette.BLACK.getColor()}, Color.WHITE, babyBuffer);
+        isDraw = true;
+    }
+
+    private void drawKFC(boolean isWhite) {
+        Graphics2D g = KFCBuffer.createGraphics();
+        
+        g.setColor(new Color(255,255,255,1));
+        g.fillRect(0, 0, 600, 600);
+        if(!isWhite){
+            g.setColor(Color.black);
+        }
+        else{
+            g.setColor(new Color(255, 255, 255));
+        }
+
+        //left
+        drawCurve(g, 240, 232, 240, 232, 255, 333, 255, 333);
+
+        //bottom
+        drawCurve(g, 255, 333, 287, 346, 324, 346, 355, 333);
+
+        //right
+        drawCurve(g, 355, 333, 355, 333, 370, 232, 370, 232);
+
+        //left rim
+        drawCurve(g, 240, 232, 240, 232, 239, 227, 239, 227);
+
+        //right rim
+        drawCurve(g, 367, 227, 367, 227, 370, 232, 370, 232);
+
+        //chicken
+        drawCurve(g, 239, 227, 239, 227, 244, 219, 244, 219);
+        drawCurve(g, 244, 219, 244, 219, 247, 218, 248, 220);
+        drawCurve(g, 248, 220, 248, 220, 262, 210, 262, 210);
+
+        drawCurve(g, 262, 210, 257, 204, 256, 201, 262, 199);
+        drawCurve(g, 262, 199, 262, 199, 272, 196, 276, 188);
+        drawCurve(g, 276, 188, 276, 188, 294, 182, 294, 182);
+        drawCurve(g, 294, 182, 294, 182, 314, 190, 314, 190);
+
+        drawCurve(g, 314, 190, 314 ,190, 315, 186, 322, 190);
+        drawCurve(g, 322, 190, 328, 186, 336, 186, 347, 195);
+        drawCurve(g, 347, 195, 352, 201, 352, 205, 348, 208);
+        drawCurve(g, 348, 208, 359, 207, 367, 214, 367, 227);
+        if(!isWhite){
+            drawKFCDetail();
+        }else{
+            floodFill(g, 307, 247, Color.WHITE, KFCBuffer);
+        }
+    }
+
+    private void drawKFCDetail() {
+        Graphics2D g = KFCBuffer.createGraphics();
+
+        g.setColor(Color.BLACK);
+        //rim
+        drawCurve(g, 236, 230, 265, 243, 343, 243, 373, 230);
+        drawCurve(g, 236, 227, 265, 240, 343, 240, 373, 227);
+
+        //red bar 1
+        drawCurve(g, 247, 236, 247, 236, 257, 309, 257, 309);
+        drawCurve(g, 257, 309, 257, 309, 270, 313, 270, 313);
+        drawCurve(g, 270, 313, 270, 313, 262, 238, 262, 238);
+
+        //red bar 2
+        drawCurve(g, 354, 236, 354, 236, 347, 310, 347, 310);
+        drawCurve(g, 347, 310, 347, 310, 356, 306, 356, 306);
+        drawCurve(g, 356, 306, 356, 306, 367, 233, 367, 233);
+
+        drawCurve(g, 262, 210, 267, 212, 271, 208, 277, 210);
+        drawCurve(g, 277, 210, 282, 217, 297, 215, 297, 215);
+        drawCurve(g, 297, 215, 297, 215, 301, 221, 301, 221);
+
+        drawCurve(g, 285, 235, 289, 230, 295, 230, 295, 230);
+        drawCurve(g, 295, 230, 295, 230, 301, 221, 301, 221);
+        drawCurve(g, 301, 221, 307, 214, 323, 215, 323, 215);
+        drawCurve(g, 323, 215, 326, 216, 322, 223, 322, 223);
+        drawCurve(g, 322, 223, 322, 223, 326, 231, 318, 237);
+
+        drawCurve(g, 322, 223, 328, 229, 336, 226, 336, 226);
+        drawCurve(g, 336, 226, 341, 228, 344, 233, 344, 233);
+
+        drawCurve(g, 316, 215, 310, 212, 309, 205, 309, 205);
+
+        drawCurve(g, 314, 198, 320, 193, 332, 197, 332, 197);
+        drawCurve(g, 332, 197, 332, 197, 343, 205, 343, 205);
+        drawCurve(g, 343, 205, 343, 205, 344, 209, 344, 209);
+        drawCurve(g, 344, 209, 355, 215, 362, 230, 362, 230);
+
+        drawCurve(g, 314, 190, 316, 198, 309, 205, 309, 205);
+        drawCurve(g, 309, 205, 307, 214, 297, 215, 297, 215);
+        //Sander
+        drawCurve(g, 297, 258, 303, 249, 320, 250, 325, 262);
+        drawCurve(g, 325, 262, 325, 262, 328, 266, 326, 272);
+        drawCurve(g, 326, 272, 326, 272, 323, 277, 323, 277);
+        drawCurve(g, 326, 272, 326, 272, 321, 264, 321, 264);
+        drawCurve(g, 326, 272, 329, 272, 326, 285, 322, 285);
+        drawCurve(g, 322, 285, 322, 293, 319, 297, 313, 298);
+        drawCurve(g, 313, 298, 313, 298, 310, 303, 310, 303);
+        drawCurve(g, 310, 303, 310, 303, 304, 297, 305, 289);
+        drawCurve(g, 304, 297, 297, 297, 292, 274, 294, 274);
+        drawCurve(g, 294, 274, 289, 268, 293, 262, 293, 262);
+
+        drawCurve(g, 294, 274, 290, 273, 289, 274, 295, 284);
+
+        drawCurve(g, 293, 262, 293, 262, 290, 260, 290, 260);
+        drawCurve(g, 290, 260, 300, 257, 309, 261, 309, 261);
+        drawCurve(g, 309, 261, 300, 259, 295, 264, 294, 274);
+
+        drawCurve(g, 300, 287, 307, 291, 312, 291, 317, 286);
+
+        drawCurve(g, 306, 281, 307, 285, 312, 285, 313, 281);
+        drawCurve(g, 313, 281, 313, 281, 317, 286, 317, 286);
+        drawCurve(g, 300, 287, 300, 287, 306, 281, 306, 281);
+
+        drawCurve(g, 300, 271, 300, 271, 305, 275, 305, 275);
+        drawCurve(g, 301, 278, 301, 278, 305, 275, 305, 275);
+
+        drawCurve(g, 318, 271, 318, 271, 313, 275, 313, 275);
+        drawCurve(g, 318, 279, 318, 279, 313, 275, 313, 275);
+
+        //Logo
+        drawCurve(g, 295, 320, 295, 320, 294, 328, 294, 328);
+        drawCurve(g, 294, 328, 294, 328, 302, 329, 302, 329);
+        drawCurve(g, 302, 329, 302, 329, 303, 320, 303, 320);
+
+        drawCurve(g, 307, 329, 307, 329, 307, 320, 307, 320);
+        drawCurve(g, 307, 320, 307, 320, 315, 320, 315, 320);
+        drawCurve(g, 307, 324, 307, 324, 313, 324, 313, 324);
+
+        drawCurve(g, 320, 328, 315, 326, 317, 319, 322, 319);
+        drawCurve(g, 320, 328, 327, 327, 328, 322, 322, 319);
+        
+        floodFill(g, 255, 257, Color.RED, KFCBuffer);
+        floodFill(g, 357, 268, Color.RED, KFCBuffer);
+        floodFill(g, 269, 224, Color.ORANGE, KFCBuffer);
+        floodFill(g, 288, 198, Color.ORANGE, KFCBuffer);
+        floodFill(g, 331, 211, Color.ORANGE, KFCBuffer);
+        floodFill(g, 335, 193, Color.ORANGE, KFCBuffer);
+        floodFill(g, 309, 227, Color.ORANGE, KFCBuffer);
+        floodFill(g, 329, 232, Color.ORANGE, KFCBuffer);
+        floodFill(g, 306, 215, Color.ORANGE, KFCBuffer);
+        isKFC = false;
     }
     
     private void updateTransparencyToBlack() {
@@ -859,6 +847,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }
         }
+        
         else if(starColorStatus[starLayers-1] > 0) {          
             for (int i = 0; i < starLayers; i++) {
                 if (starColorStatus[i] > 0) {
@@ -869,7 +858,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     break;
                 }
             }
-        };
+        }
+        
         if (starColorSwitch == 0) {
             isStarDone = true;
         }
@@ -1046,7 +1036,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     private void updateFountain(){
-
         double shrinkingSpeed = 0.000001;
         double veticalSpeed = 0.0001;
 
@@ -1110,6 +1099,36 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             
             }
 
+        }
+    }
+
+    private void updateKFCScale(double elapsedTime) {
+        KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
+        KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
+        if(KFCScale >= 1){
+            KFCScale = 1;
+            KFCScaleVelocity = -KFCScaleVelocity;
+            KFCScaleAccelerate = -KFCScaleAccelerate;
+        }
+        else if(KFCScale <= 0.0000000000000000000001){
+            KFCScale = 0.0000000000000000000001;
+            KFCScaleVelocity = -KFCScaleVelocity;
+            KFCScaleAccelerate = -KFCScaleAccelerate;
+        }
+    }
+
+    private void updateChickenScale(double elapsedTime) {
+        chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
+        chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
+        if(chickenScale >= 1){
+            chickenScale = 1;
+            chickenScaleVelocity = -chickenScaleVelocity;
+            chickenScaleAccelerate = -chickenScaleAccelerate;
+        }
+        else if(chickenScale <= 0.0000000000000000000001){
+            chickenScale = 0.0000000000000000000001;    
+            chickenScaleVelocity = -chickenScaleVelocity;
+            chickenScaleAccelerate = -chickenScaleAccelerate;
         }
     }
 
@@ -1685,23 +1704,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void plot(Graphics g, int x, int y) {
         g.fillRect(x, y, 1, 1);
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        System.out.println("Click at "+ e.getX() +", "+e.getY());
-    }
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-    @Override
-    public void mouseExited(MouseEvent e) {
     }
 }
 
