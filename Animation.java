@@ -1486,36 +1486,6 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
-
-    //floodfill area seed at x,y to fill targetColor nearby with fillColor
-    private void floodFill(Graphics g, int x, int y, Color targetColor, Color fillColor, BufferedImage buffer) {
-        int targetRGB = 0;
-        if(targetColor != null){
-            targetRGB = targetColor.getRGB();
-        }
-        if (buffer.getRGB(x, y) == targetRGB) {
-            Queue<Point> queue = new LinkedList<>();
-            queue.add(new Point(x, y));
-
-            while (!queue.isEmpty()) {
-                Point point = queue.poll();
-                x = (int) point.getX();
-                y = (int) point.getY();
-
-                if (buffer.getRGB(x, y) == targetRGB) {
-                    g.setColor(fillColor);
-                    plot(g, x, y);
-
-                    // Enqueue adjacent pixels
-                    if (x - 1 >= 0) queue.add(new Point(x - 1, y));
-                    if (x + 1 < 600) queue.add(new Point(x + 1, y));
-                    if (y - 1 >= 0) queue.add(new Point(x, y - 1));
-                    if (y + 1 < 600) queue.add(new Point(x, y + 1));
-                }
-            }
-        }
-    }
-
     //floodfill area seed at x,y to fill any color nearby that is not borderColor with fillColor 
     private void floodFillBorder(Graphics g,int x, int y, Color[] borderColor, Color fillColor, BufferedImage buffer) {
         int[] borderRGB;
@@ -1560,56 +1530,6 @@ public class Animation extends JPanel implements Runnable{
         }
         return false;
     }
-
-    //fill rectangle by drawing each line with different color to make gradient effect
-    private void gradientFill(Graphics g, int x1, int y1, int x2, int y2, Color startColor, Color endColor) {      
-        int startR = startColor.getRed();   
-        int startG = startColor.getGreen(); 
-        int startB = startColor.getBlue();
-    
-        int endR = endColor.getRed();     
-        int endG  = endColor.getGreen();   
-        int endB  = endColor.getBlue();
-    
-        int range = y2 - y1;
-        for (int y = y1; y <= y2; y++) {
-            int R = interpolateColor(startR, endR, range, y - y1);
-            int G = interpolateColor(startG, endG, range, y - y1);
-            int B = interpolateColor(startB, endB, range, y - y1);
-            g.setColor(new Color(R, G, B));
-            drawLine(g, x1, y, x2, y);
-        }
-        
-    }
-    
-    //find Color value that are between start and end 
-    private int interpolateColor(int start, int end, int range, int position) {
-        return clampRGB(start + position * (end - start) / range);
-    }
-    
-    //clamp value to make it in rgb value rangee (0-255)
-    private int clampRGB(int value) {
-        //if value < 0 calmp to 0
-        //if value > 255 clamp to 255
-        return Math.max(0, Math.min(value, 255));
-    }
-
-    //draw half circle with bezier curve
-    private void drawHalfCircle(Graphics2D g, int x, int y, int r,String d) {
-        if(d == "L"){
-            drawCurve(g, x-r, y, x-r, (int)(y - (0.552 * r)), (int)(x - (0.552 * r)), y-r, x, y-r);
-            drawCurve(g, x-r, y, x-r, (int)(y - (0.552 *-r)), (int)(x - (0.552 * r)), y+r, x, y+r);
-        }
-        else if(d == "R"){
-            drawCurve(g, x+r, y, x+r, (int)(y - (0.552 * r)), (int)(x - (0.552 *-r)), y-r, x, y-r);
-            drawCurve(g, x+r, y, x+r, (int)(y - (0.552 *-r)), (int)(x - (0.552 *-r)), y+r, x, y+r);
-        }
-    }
-
-    //draw a triangle with java fillPolygon
-    private void fillTriangle(Graphics g, int x1, int y1, int x2, int y2, int x3, int y3){
-        g.fillPolygon(new int[]{x1,x2,x3}, new int[]{y1,y2,y3}, 3);
-    }
     
     //draw curve line with bezier's curve algorithm
     private void drawCurve(Graphics2D g, int x1,int y1,int x2,int y2, int x3,int y3, int x4,int y4){
@@ -1628,42 +1548,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
-    //draw straight line with bresenham's algorithm
-    private void drawLine(Graphics g, int x1, int y1, int x2, int y2){
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = (x1 < x2) ? 1 : -1;
-        int sy = (y1 < y2) ? 1 : -1;
-        boolean isSwap = false;
-        if(dy > dx)
-        {
-            int temp = dx;
-            dx = dy;
-            dy = temp;
-            isSwap = true;
-        }
-        int D = 2 * dy - dx;
-        int x = x1;
-        int y = y1;
-        for (int i = 1; i <= dx; i++){
-            plot(g, x, y);
-            if (D >= 0)
-            {
-                if (isSwap) 
-                    x += sx;
-                else 
-                    y += sy;
-                D -= 2 * dx;
-            }
-            if (isSwap) 
-                y += sy;
-            else 
-                x += sx;
-            D += 2 * dy;
-        }
-    }
-
-     private void drawCircle(Graphics g, int xc, int yc, int r) {
+    private void drawCircle(Graphics g, int xc, int yc, int r) {
         int x = 0;
         int y = r;
         int Dx = 2 * x;
