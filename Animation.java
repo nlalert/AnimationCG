@@ -1216,27 +1216,27 @@ public class Animation extends JPanel implements Runnable{
         // System.out.println(red);
         // System.out.println(green);
         // System.out.println(blue);
-        // if(red < 248 && green < 248 && blue < 248){
-        //     Color color = new Color(255,255,255, (int) whitenOpacity);
-        //     floodFill(g, 331, 177, color, babyBuffer);
-        //     floodFill(g, 309, 220, color, babyBuffer);
-        //     floodFill(g, 271, 248, color, babyBuffer);
+        if(red < 248 && green < 248 && blue < 248){
+            Color color = new Color(255,255,255, 255-(int)whitenOpacity*10);
+            floodFill(g, 331, 177, color, babyBuffer);
+            floodFill(g, 309, 220, color, babyBuffer);
+            floodFill(g, 271, 248, color, babyBuffer);
     
-        //     floodFill(g, 294, 325, color, babyBuffer);
-        //     floodFill(g, 306, 318, color, babyBuffer);
-        //     floodFill(g, 312, 317, color, babyBuffer);
-        //     floodFill(g, 321, 316, color, babyBuffer);
+            floodFill(g, 294, 325, color, babyBuffer);
+            floodFill(g, 306, 318, color, babyBuffer);
+            floodFill(g, 312, 317, color, babyBuffer);
+            floodFill(g, 321, 316, color, babyBuffer);
             
-        //     floodFill(g, 304, 250, color, babyBuffer);
-        //     floodFill(g, 255, 241, color, babyBuffer);
+            floodFill(g, 304, 250, color, babyBuffer);
+            floodFill(g, 255, 241, color, babyBuffer);
     
-        //     floodFill(g, 273, 277, color, babyBuffer);
-        //     floodFill(g, 322, 284, color, babyBuffer);
-        //     floodFill(g, 309, 237, color, babyBuffer);
-        //     floodFill(g, 323, 293, color, babyBuffer);
-        //     floodFill(g, 307, 203, color, babyBuffer);
-        //     floodFill(g, 299, 338, color, babyBuffer);
-        // }
+            floodFill(g, 273, 277, color, babyBuffer);
+            floodFill(g, 322, 284, color, babyBuffer);
+            floodFill(g, 309, 237, color, babyBuffer);
+            floodFill(g, 323, 293, color, babyBuffer);
+            floodFill(g, 307, 203, color, babyBuffer);
+            floodFill(g, 299, 338, color, babyBuffer);
+        }
     }
 
     //paint entire image on buffer
