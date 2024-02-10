@@ -233,7 +233,7 @@ public class Animation extends JPanel implements Runnable{
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
 
-            //Moving each balls in the layer of the dome and Make chicken white
+            //Moving each balls in the layer of the dome
             else if(!isDomeDone){
                 currentStage = Stage.Evolve;
                 //Moving each balls in the layer of the dome
@@ -264,19 +264,25 @@ public class Animation extends JPanel implements Runnable{
                     updateStarColor();
                 }
             }
+
+            //Moving each balls in the layer of the ring
             else if(!isRingDone){
                 currentStage = Stage.Evolve;
-                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
+                //Moving each balls in the layer of the ring
+                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){
                     updateRing();
                 }
                 else{
                     isRingDone = true;
                 }
+                //Move and change color of background star
                 if(isStarStart == true && starColorSwitch > 0){
                     updateStarMovement();
                     updateStarColor();
                 }
             }
+
+            //Make screen white and clear it
             else if(!isFlashbangDone){
                 //draw KFC Bucket with coloring
                 currentStage = Stage.Evolve;
@@ -289,28 +295,34 @@ public class Animation extends JPanel implements Runnable{
                     drawKFC(false);
                 }
             }
+
+            //Moving each balls in the fountain
             else if(!isFountainDone){
                 currentStage = Stage.Evolve;
-                if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
+                if (fountainSize[fountainBalls] > 0){
                     updateFountain();
                 }
                 else{
                     isFountainDone = true;
                 }
             }
-            else if(!isClear){//dark screen transition at the 4th second
+
+            //bring background back
+            else if(!isClear){
                 currentStage = Stage.Evolve;
                 updateTransparencyToClear();
-            }//6.5 - 99999999 second  
+            } 
+
+            //Display Message line 3
             else if(lineCnt[2] < lineText[2].length()){
-                //Display Message line 3
                 isText = false;
                 isText = true;
                 currentStage = Stage.Text;
                 lineCnt[2] += letterVelocity * elapsedTime / 1000.0;
             }
+
+            //Display Message line 4
             else if(lineCnt[3] < lineText[3].length()){
-                //Display Message line 4
                 currentStage = Stage.Text;
                 lineCnt[3] += letterVelocity * elapsedTime / 1000.0;
             }
@@ -479,6 +491,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //initialize position of each layer of the ring
     private void initializeRing() {
      
         //Set a vertical position of each layer of the spiral
@@ -488,7 +501,7 @@ public class Animation extends JPanel implements Runnable{
             layerGaps += 400;
         } 
         
-        //Set an angle, a vertical position and a horizontal position of each balls in the layer of the ring
+        //Set an angle and a position of each balls in the layer of the ring
         for (int i = 0; i < ringLayers; i++) { 
             double radius = ringMidpointY - ringPositionY[i][ringBalls];
             for (int j = 0; j < ringBalls; j++) { 
@@ -499,6 +512,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //initialize position of each balls of the fountain
     private void initializeFountain() {
 
         Random randomNumber = new Random();
@@ -801,6 +815,7 @@ public class Animation extends JPanel implements Runnable{
         isKFC = false;
     }
     
+    //increase tranparency of the blacksceen
     private void updateTransparencyToBlack() {
         tranparency += 0.00001;
         if(tranparency >= 255){
@@ -808,6 +823,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //decrease tranparency of the blacksceen
     private void updateTransparencyToClear() {
         tranparency -= 0.00001;
         if(tranparency <= 0){
@@ -815,6 +831,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //increase and decrease tranparency of the whitesceen
     private void updateFlashbangTransparency() {
         if (!isFlashbangWhite) {            
             flashbangTranparency += 0.0002;
@@ -830,6 +847,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //move position of each star
     private void updateStarMovement() {
         
         int minOffsetX = -10;
@@ -854,6 +872,7 @@ public class Animation extends JPanel implements Runnable{
 
     }
 
+    //change color of each star
     private void updateStarColor() {
 
         double colorChangeSpeed = 0.00000095;
@@ -885,6 +904,7 @@ public class Animation extends JPanel implements Runnable{
         
     }
 
+    //update position and size of each balls in the layer of the spiral
     private void updateSpiral() {
         int baseSize = 12;
         int finalSize = 3;
@@ -968,6 +988,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //update position and size of each balls in the layer of the dome
     private void updateDome(){
 
         int baseSize = 8;
@@ -1031,6 +1052,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //update position and size of each balls in the layer of the ring
     private void updateRing(){
 
         int baseSize = 8;
@@ -1054,15 +1076,16 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //update position and size of each balls of the foutain
     private void updateFountain(){
         double shrinkingSpeed = 0.000001;
         double veticalSpeed = 0.0001;
+        double archFloor = 360;
 
         for (int i = 0; i <= fountainBalls; i++) {
 
             double archHeight = fountainArchHeight[i];
             double archLength = Math.abs(fountainArchLength[i]);
-            double archFloor = 300;
 
             double archMidpointX = fountainArchLength[i] + fountainMidpointX;
             double archMidpointY = fountainMidpointY;
@@ -1213,9 +1236,6 @@ public class Animation extends JPanel implements Runnable{
         int red = currentColor.getRed();
         int green = currentColor.getGreen();
         int blue = currentColor.getBlue();
-        // System.out.println(red);
-        // System.out.println(green);
-        // System.out.println(blue);
         if(red < 248 && green < 248 && blue < 248){
             Color color = new Color(255,255,255, 255-(int)whitenOpacity*10);
             floodFill(g, 331, 177, color, babyBuffer);
@@ -1287,16 +1307,18 @@ public class Animation extends JPanel implements Runnable{
 
     }
 
-    
+    //draw blackscreen
     private void fadeToBlack(Graphics2D g) {
         g.setColor(new Color(0,0,0,(int)tranparency));
         g.fillRect(0, 0, 600, 450);
 
+        //bring blackgroud back
         if (isBlack) {
             drawBackground(g);
         }
     }
     
+    //draw moving star in the background
     private void drawStar(Graphics2D g) {
         for (int i = 0; i < starLayers; i++) {
             if(starColorStatus[i] >= 1){
@@ -1333,6 +1355,7 @@ public class Animation extends JPanel implements Runnable{
         g.fillRoundRect(20, 460, 560, 130, 10, 10);
     }
 
+    //draw text in the text box
     private void drawText() {
         Graphics2D g = textBoxBuffer.createGraphics();
         String text1 = "";
@@ -1369,6 +1392,7 @@ public class Animation extends JPanel implements Runnable{
         g.drawString(text2, 35, 560);
     }
 
+    //draw effect on buffer
     private void drawEffect() {
         Graphics2D g = effectBuffer.createGraphics();
         g.setColor(new Color(0, 0, 0, 1));
@@ -1392,6 +1416,7 @@ public class Animation extends JPanel implements Runnable{
         
     }
 
+    //draw moving balls of the spiral
     private void drawSpiral(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < spiralLayers; i++) {   
@@ -1406,6 +1431,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //draw moving balls of the dome
     private void drawDome(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < domeLayers; i++) {   
@@ -1420,6 +1446,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //draw moving balls of the ring
     private void drawRing(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < ringLayers; i++) {   
@@ -1434,6 +1461,7 @@ public class Animation extends JPanel implements Runnable{
         }
     }
 
+    //draw moving balls of the foutain
     private void drawFountain(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < fountainBalls; i++) {   
@@ -1445,7 +1473,8 @@ public class Animation extends JPanel implements Runnable{
             }
         }
     }
-
+    
+    //check if the moving ball is exists in the border
     private boolean canFill(int x, int y, int size) {
         if (x > 0 && x < 600 && y > 0 && y < 600 && size > 1) {
             return true;
