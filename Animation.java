@@ -70,9 +70,30 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     String line2Text = "BABY CHICK is evolving!";
     String line3Text = "Congratulations! BABY CHICK";
     String line4Text = "evolved into CHUD-JUJAI!";
+
+    //------------------------------------------------------------------------------
+    //                                Background
+    //------------------------------------------------------------------------------
     
     double tranparency = 0;
     double transition = 0;
+
+    int starLayers = 10;
+    int starPoints = 8;
+    int starMidpointX = 300;
+    int starMidpointY = 225;
+    int starColorSwitch = 6;
+    double starOffsetX = 0;
+    double starOffsetY = 10;
+    boolean isStarStart = false;
+    double[] starColorStatus = new double[starLayers];
+    double[][] starPositionX = new double[starLayers][starPoints*2];
+    double[][] starPositionY = new double[starLayers][starPoints*2];
+
+    //------------------------------------------------------------------------------
+    //                                 Effects
+    //------------------------------------------------------------------------------
+
     boolean isWaiting = false;
 
     int spiralLayers = 10;
@@ -99,7 +120,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     int ringLayers = 2;
     int ringBalls = 16;
     int ringMidpointX = 300;
-    int ringMidpointY = 300;
+    int ringMidpointY = 225;
     int ringBaseRadius = 400;
     int ringFinalRadius = 25;
     boolean isRingDone = false;
@@ -120,6 +141,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     double[] fountainPositionY = new double[fountainBalls+1];
     double[] fountainArchLength = new double[fountainBalls+1];
     double[] fountainArchHeight = new double[fountainBalls+1];
+
+    //------------------------------------------------------------------------------
+    //                                Chicken
+    //------------------------------------------------------------------------------
 
     double chickenMove = 0;
     double chickenVelocity = -100;
@@ -144,10 +169,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         double currentTime, elapsedTime, startTime;
         double letterVelocity = 10;
 
+        initializeStar();
+
         initializeSpiral();
         initializeDome();
         initializeRing();
         initializeFountain();
+
         drawBabyBuffer();
         drawWhiteKFC(false);
         
@@ -159,6 +187,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             lastTime = currentTime;
             
             timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
+
+            if (isStarStart == true) {
+                if(timer * 100 % 1 == 0 && starColorSwitch > 0){
+                    updateStarMovement();
+                    updateStarColor();
+                }
+            }
 
             //0 - 3 second
             if(timer <= 3){
@@ -192,6 +227,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 updateTransparency(elapsedTime);
             }//6.5 - 99999999 second
             else if(timer <= 12.5 && timer * 1000 % 1 == 0 || !isSpiralDone){
+                isStarStart = true;
                 isText = true;
                 currentStage = Stage.Evolve;
                 if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){ //Moving each balls in the layer of the spiral
@@ -554,6 +590,33 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         isDraw = true;
     }
 
+    private void initializeStar() {
+
+        double layerGaps = 0;
+        double starBaseInnerRadius = 11.5;
+        double starBaseOuterRadius = 15;
+        double[] starAngle = new double[starPoints*2];
+
+        for (int i = 0; i < starLayers; i++) {
+            starColorStatus[i] = 0;
+            for (int j = 0; j < starPoints*2; j++) {  
+
+                starAngle[j] = (360 / ((double)starPoints * 2)) * j;
+
+                if(j % 2 == 0){
+                    starPositionX[i][j] = starMidpointX - ((starBaseOuterRadius * layerGaps) * Math.cos(Math.PI * 2 * starAngle[j] / 360));
+                    starPositionY[i][j] = starMidpointY - ((starBaseOuterRadius * layerGaps) * Math.sin(Math.PI * 2 * starAngle[j] / 360));
+                }
+                else{
+                    starPositionX[i][j] = starMidpointX - ((starBaseInnerRadius * layerGaps) * Math.cos(Math.PI * 2 * starAngle[j] / 360));
+                    starPositionY[i][j] = starMidpointY - ((starBaseInnerRadius * layerGaps) * Math.sin(Math.PI * 2 * starAngle[j] / 360));
+                }
+            }
+            layerGaps += 3.2;
+        }
+
+    }
+
     private void initializeSpiral() {
 
         //Set a horizontal position of each balls in the layer of the spiral
@@ -641,8 +704,58 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    private void updateStarMovement() {
+        
+        int minOffsetX = -10;
+        int minOffsetY = -10;
+        int maxOffsetX = 10;
+        int maxOffsetY = 10;
+        
+        double movingSpeed = 0.0001;
+        
+        if(starOffsetY >= maxOffsetY && starOffsetX > minOffsetX){
+            starOffsetX -= movingSpeed;
+        }
+        else if(starOffsetX <= minOffsetX && starOffsetY > minOffsetY){
+            starOffsetY -= movingSpeed;
+        }
+        else if(starOffsetY <= minOffsetY && starOffsetX < maxOffsetX){
+            starOffsetX += movingSpeed;
+        }
+        else if(starOffsetX >= maxOffsetX && starOffsetY < maxOffsetY){
+            starOffsetY += movingSpeed;
+        }
+
+    }
+
+    private void updateStarColor() {
+
+        double colorChangeSpeed = 0.00001;
+
+        if (starColorStatus[starLayers-1] < 1) {          
+            for (int i = 0; i < starLayers; i++) {
+                if (starColorStatus[i] < 1) {
+                    starColorStatus[i] += colorChangeSpeed;
+                    break;
+                }
+            }
+        }
+        else if(starColorStatus[starLayers-1] > 0) {          
+            for (int i = 0; i < starLayers; i++) {
+                if (starColorStatus[i] > 0) {
+                    starColorStatus[i] -= colorChangeSpeed;
+                    if (i == starLayers-1) {
+                        starColorSwitch--;
+                    }
+                    break;
+                }
+            }
+        };
+
+    }
+
     private void updateSpiral() {
-        int baseSize = 8;
+        int baseSize = 12;
         int finalSize = 3;
         int layerHeight = 40;
         int baseLength = 300;
@@ -726,7 +839,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void updateDome(){
 
-        int baseSize = 6;
+        int baseSize = 8;
         int layerHeight = 40;
         int baseLength = 75;
         int finalLength = 300;
@@ -958,9 +1071,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             drawBackground(g);
         if(currentStage == Stage.Evolve)
             fadeToBlack(g);
-            if(!isWaiting){
-                drawEffect(g);
-            }
+        if (isStarStart == true && starColorSwitch > 0){
+            drawStar(g);
+        }
+        if(!isWaiting){
+            drawEffect(g);
+        }
         if(isText){
             drawTextbox(g);
             drawText(g);
@@ -1002,13 +1118,38 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             g.setColor(color);
             g.fillRect(0, i*15, 600, 12);
         }
+
     }
 
+    
     private void fadeToBlack(Graphics2D g) {
         g.setColor(new Color(0,0,0,(int)tranparency));
         g.fillRect(0, 0, 600, 450);
     }
     
+    private void drawStar(Graphics2D g) {
+        for (int i = 0; i < starLayers; i++) {
+            if(starColorStatus[i] >= 1){
+                g.setColor(new Color(140,190,235,20));
+            }
+            else if(starColorStatus[i] <= 0){
+                g.setColor(new Color(0,0,0,20));
+            }
+            int[] starIntPositionX_1 = new int[starPoints*2];
+            int[] starIntPositionY_1 = new int[starPoints*2];
+            int[] starIntPositionX_2 = new int[starPoints*2];
+            int[] starIntPositionY_2 = new int[starPoints*2];
+            for (int j = 0; j < starPoints*2; j++) {
+                starIntPositionX_1[j] = (int)(starPositionX[i][j] + starOffsetX);
+                starIntPositionY_1[j] = (int)(starPositionY[i][j] + starOffsetY);
+                starIntPositionX_2[j] = (int)(starPositionX[i][j] - starOffsetX);
+                starIntPositionY_2[j] = (int)(starPositionY[i][j] - starOffsetY);
+            };
+            g.fillPolygon(starIntPositionX_1, starIntPositionY_1, starPoints*2);
+            g.fillPolygon(starIntPositionX_2, starIntPositionY_2, starPoints*2);
+        }
+    }
+
     //draw text box on bottom part of screen
     private void drawTextbox(Graphics2D g) {
         g.setColor(new Color(62,57,70));
