@@ -3,13 +3,11 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -17,32 +15,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Animation extends JPanel implements Runnable,MouseListener{
+    //Buffers
+    BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 
     public Animation(){
         addMouseListener(this);
     }
 
-    //Main variable
-    static Font font;
-    private BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private Stage currentStage = Stage.Show;
-    private boolean isDraw = false;
-    private boolean isText = true;
-    private boolean isKFC = false;
-    private double whitenOpacity = 20;
-
     public static void main(String[] args) {
-        try {
-            font = Font.createFont(Font.TRUETYPE_FONT, new File("pokemon-emerald.ttf")).deriveFont(50f);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("pokemon-emerald.ttf")));
-        } catch (Exception e) {
-            System.err.println("NO FONT");
-        }
-
         Animation m = new Animation();
         JFrame f = new JFrame();
         f.add(m);
@@ -62,46 +45,47 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     // =============================================================================
     // =============================================================================
 
-    double letter1 = 0;
-    double letter2 = 0;
-    double letter3 = 0;
-    double letter4 = 0;
-    String line1Text = "What?";
-    String line2Text = "BABY CHICK is evolving!";
-    String line3Text = "Congratulations! BABY CHICK";
-    String line4Text = "evolved into CHUD-JUJAI!";
+    Font font;
+    Stage currentStage;
+    boolean isDraw;
+    boolean isText;
+    boolean isKFC;
+    double whitenOpacity;
+
+    double lineCnt[] = new double[4];
+    final String lineText[] = new String[4];
     
-    double tranparency = 0;
-    double transition = 0;
+    double tranparency;
+    double transition;
 
-    int pillarLayers = 10;
-    int pillarBalls = 4;
-    int pillarMidpointX = 300;
-    int pillarMidpointY = 360;
-    int pillarEndpointY = 0;
-    double[][] pillarSize = new double[pillarLayers][pillarBalls];
-    double[][] pillarPositionX = new double[pillarLayers][pillarBalls];
-    double[][] pillarPositionY = new double[pillarLayers][pillarBalls+1];
-    char[][] pillarDirection = new char[pillarLayers][pillarBalls];
+    int pillarLayers;
+    int pillarBalls;
+    int pillarMidpointX;
+    int pillarMidpointY;
+    int pillarEndpointY;
+    double[][] pillarSize;
+    double[][] pillarPositionX;
+    double[][] pillarPositionY;
+    char[][] pillarDirection;
 
-    int domeLayers = 6;
-    int domeBalls = 8;
-    int domeMidpointX = 300;
-    int domeMidpointY = 50;
-    int domeEndpointY = 360;
-    double[][] domeSize = new double[domeLayers][domeBalls];
-    double[][] domePositionX = new double[domeLayers][domeBalls];
-    double[][] domePositionY = new double[domeLayers][domeBalls+1];
+    int domeLayers;
+    int domeBalls;
+    int domeMidpointX;
+    int domeMidpointY;
+    int domeEndpointY;
+    double[][] domeSize;
+    double[][] domePositionX;
+    double[][] domePositionY;
 
-    double chickenMove = 0;
-    double chickenVelocity = -100;
-    double chickenScale = 1;
-    double chickenScaleVelocity = 2;
-    double chickenScaleAccelerate = 0.7;
-    double KFCScale = 0;
-    double KFCScaleVelocity = 2;
-    double KFCScaleAccelerate = 0.7;
-    double timer = 0;
+    double chickenMove;
+    double chickenVelocity;
+    double chickenScale;
+    double chickenScaleVelocity;
+    double chickenScaleAccelerate;
+    double KFCScale;
+    double KFCScaleVelocity;
+    double KFCScaleAccelerate;
+    double timer;
 
     // =============================================================================
     // =============================================================================
@@ -109,32 +93,30 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     // =============================================================================
     // =============================================================================
 
-    //start animation
-    @Override
     public void run() {
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
-        double letterVelocity = 10;
+        double letterVelocity = 12;
+        startTime = lastTime;
 
+        initializeAnimationVar();
         initializePillar();
         initializeDome();
         drawBabyBuffer();
         drawWhiteKFC(false);
         
-        startTime = lastTime;
         while (true) {
-
             currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - lastTime;
             lastTime = currentTime;
             
             timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
 
-            //0 - 3 second
             if(timer <= 3){
                 //do nothing
-            }//3-6
+            }
             else if(timer <= 6){
+                //Jumping Chick
                 currentStage = Stage.Show;
                 chickenMove += chickenVelocity * elapsedTime / 1000.0;
                 if(chickenMove >= 0){
@@ -145,36 +127,42 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     chickenMove = -30;
                     chickenVelocity = -chickenVelocity;
                 }
-            }//0 - 3.416 second
-            else if(timer <= 6 + 5/letterVelocity){
+            }
+            else if(lineCnt[0] < lineText[0].length()){
+                //Display Message line 1
                 isText = true;
                 currentStage = Stage.Text;
-                letter1 += letterVelocity * elapsedTime / 1000.0;
-            }//3.416 - 5.5 second
-            else if(timer <= 6 + 28/letterVelocity){
+                lineCnt[0] += letterVelocity * elapsedTime / 1000.0;
+            }
+            else if(lineCnt[1] < lineText[1].length()){
+                //Display Message line 2
                 isText = true;
                 currentStage = Stage.Text;
-                letter2 += letterVelocity * elapsedTime / 1000.0;
-            }//5.5 - 6.5 second
-            else if(timer <= 9.5 && tranparency < 255){//dark screen transition at the 4th second  
+                lineCnt[1] += letterVelocity * elapsedTime / 1000.0;
+            }
+            else if(timer <= 9.5 && tranparency < 255){
+                //dark screen transition
                 isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparency(elapsedTime);
-            }//6.5 - 12.5 second
-            else if(timer <= 14 || false){ //Moving each balls in the layer of the pillar
+            }
+            else if(timer <= 14 || false){
+                //Moving each balls in the layer of the pillar and Make chicken white
                 currentStage = Stage.Evolve;
                 if(pillarPositionY[pillarLayers-1][pillarBalls] >= pillarEndpointY && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the pillar
                     updatePillar();
                 }
                 whitenOpacity += 100 * elapsedTime / 1000.0;
-            }//12.5 - 99999999 second
-            else if(timer <= 16){ //Moving each balls in the layer of the pillar
+            }
+            else if(timer <= 16){ 
+                //Moving each balls in the layer of the pillar and Make chicken white
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY && timer * 1000 % 1 == 0){ //Moving each balls in the layer of the dome
                     updateDome();
                 }
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
             else if(timer <= 25 || chickenScale > 0.1){
+                //Scaling Chicken and KFC Bucket inversely
                 currentStage = Stage.Evolve;
                 chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
                 chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
@@ -202,26 +190,80 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     KFCScaleAccelerate = -KFCScaleAccelerate;
                 }
             }
-            else if(timer <= 40 + 27/letterVelocity){
+            else if(lineCnt[2] < lineText[2].length()){
+                //draw KFC Bucket with coloring
                 if(!isText){
                     isKFC = true;
                 }
                 if(isKFC){
                     drawWhiteKFC(true);
                 }
+                //Display Message line 3
                 isText = true;
                 currentStage = Stage.Text;
-                letter3 += letterVelocity * elapsedTime / 1000.0;
+                lineCnt[2] += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer <= 40 + 51/letterVelocity){
+            else if(lineCnt[3] < lineText[3].length()){
+                //Display Message line 4
                 isText = true;
                 currentStage = Stage.Text;
-                letter4 += letterVelocity * elapsedTime / 1000.0;
+                lineCnt[3] += letterVelocity * elapsedTime / 1000.0;
             }
         
             //Display
             repaint();
         }
+    }
+
+    private void initializeAnimationVar() {
+        font = new Font("Segoe UI", Font.PLAIN, 36);
+
+        currentStage = Stage.Show;
+        isDraw = false;
+        isText = true;
+        isKFC = false;
+        whitenOpacity = 20;
+
+        lineCnt[0] = 0;
+        lineCnt[1] = 0;
+        lineCnt[2] = 0;
+        lineCnt[3] = 0;
+        lineText[0] = "What?";
+        lineText[1] = "BABY CHICK is evolving!";
+        lineText[2] = "Congratulations! BABY CHICK";
+        lineText[3] = "evolved into CHUD-JUJAI!";
+
+        chickenMove = 0;
+        chickenVelocity = -100;
+        chickenScale = 1;
+        chickenScaleVelocity = 2;
+        chickenScaleAccelerate = 0.7;
+        KFCScale = 0;
+        KFCScaleVelocity = 2;
+        KFCScaleAccelerate = 0.7;
+        timer = 0;
+
+        tranparency = 0;
+        transition = 0;
+    
+        pillarLayers = 10;
+        pillarBalls = 4;
+        pillarMidpointX = 300;
+        pillarMidpointY = 360;
+        pillarEndpointY = 0;
+        pillarSize = new double[pillarLayers][pillarBalls];
+        pillarPositionX = new double[pillarLayers][pillarBalls];
+        pillarPositionY = new double[pillarLayers][pillarBalls+1];
+        pillarDirection = new char[pillarLayers][pillarBalls];
+
+        domeLayers = 6;
+        domeBalls = 8;
+        domeMidpointX = 300;
+        domeMidpointY = 50;
+        domeEndpointY = 360;
+        domeSize = new double[domeLayers][domeBalls];
+        domePositionX = new double[domeLayers][domeBalls];
+        domePositionY = new double[domeLayers][domeBalls+1];
     }
 
     private void drawKFC() {
@@ -321,7 +363,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         
         g.setColor(new Color(255,255,255,1));
         g.fillRect(0, 0, 600, 600);
-        // g.setColor(Color.WHITE);
         if(isBlack){
             g.setColor(Color.black);
         }
@@ -822,22 +863,22 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         Graphics2D g = textBoxBuffer.createGraphics();
         String text1 = "";
         String text2 = "";
-        if(letter2 > line2Text.length()){
-            for (int i = 0; i < letter3 && i < line3Text.length(); i++) 
-                text1 += line3Text.charAt(i);
-            for (int i = 0; i < letter4 && i < line4Text.length(); i++){
-                if(line4Text.charAt(i) == ' ')
-                    text2 += line4Text.charAt(i);
-                text2 += line4Text.charAt(i);
+        if(lineCnt[1] > lineText[1].length()){
+            for (int i = 0; i < lineCnt[2] && i < lineText[2].length(); i++) 
+                text1 += lineText[2].charAt(i);
+            for (int i = 0; i < lineCnt[3] && i < lineText[3].length(); i++){
+                if(lineText[3].charAt(i) == ' ')
+                    text2 += lineText[3].charAt(i);
+                text2 += lineText[3].charAt(i);
             }
         }
         else{
-            for (int i = 0; i < letter1 && i < line1Text.length(); i++) 
-                text1 += line1Text.charAt(i);
-            for (int i = 0; i < letter2 && i < line2Text.length(); i++){
-                if(line2Text.charAt(i) == ' ')
-                    text2 += line2Text.charAt(i);
-                text2 += line2Text.charAt(i);
+            for (int i = 0; i < lineCnt[0] && i < lineText[0].length(); i++) 
+                text1 += lineText[0].charAt(i);
+            for (int i = 0; i < lineCnt[1] && i < lineText[1].length(); i++){
+                if(lineText[1].charAt(i) == ' ')
+                    text2 += lineText[1].charAt(i);
+                text2 += lineText[1].charAt(i);
             }
         }
         
