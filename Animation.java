@@ -172,10 +172,12 @@ public class Animation extends JPanel implements Runnable{
             lastTime = currentTime;
             
             timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
+            
             //0 - 3 second
             if(timer <= 3){
                 //do nothing
             }
+
             else if(timer <= 6 || chickenMove > 0.01){
                 //Jumping Chick
                 currentStage = Stage.Show;
@@ -189,57 +191,74 @@ public class Animation extends JPanel implements Runnable{
                     chickenVelocity = -chickenVelocity;
                 }
             }
+
             else if(lineCnt[0] < lineText[0].length()){
                 //Display Message line 1
                 isText = true;
                 currentStage = Stage.Text;
                 lineCnt[0] += letterVelocity * elapsedTime / 1000.0;
             }
+
             else if(lineCnt[1] < lineText[1].length()){
                 //Display Message line 2
                 isText = true;
                 currentStage = Stage.Text;
                 lineCnt[1] += letterVelocity * elapsedTime / 1000.0;
-            }//5.5 - 6.5 second
-            else if(!isBlack){//dark screen transition at the 4th second
+            }
+
+            //dark screen transition
+            else if(!isBlack){
                 isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparencyToBlack();
-            }//6.5 - 99999999 second
-            else if(!isSpiralDone){
+            }
+
+            //Moving each balls in the layer of the spiral , start Making chicken white , start Moving and changing color of background stars
+            else if(!isSpiralDone){ 
                 isStarStart = true;
                 currentStage = Stage.Evolve;
-                if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){ //Moving each balls in the layer of the spiral
+                //Moving each balls in the layer of the spiral
+                if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){
                     updateSpiral();
                 }
                 else{
                     isSpiralDone = true;
                 }
+                //Move and change color of background stars
                 if(isStarStart == true && starColorSwitch > 0){
                     updateStarMovement();
                     updateStarColor();
                 }
+                //Make chicken white
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-            else if(!isDomeDone){ //Moving each balls in the layer of the spiral and Make chicken white
+
+            //Moving each balls in the layer of the dome and Make chicken white
+            else if(!isDomeDone){
                 currentStage = Stage.Evolve;
-                if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
+                //Moving each balls in the layer of the dome
+                if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){
                     updateDome();
                 }
                 else{
                     isDomeDone = true;
                 }
+                //Move and change color of background stars
                 if(isStarStart == true && starColorSwitch > 0){
                     updateStarMovement();
                     updateStarColor();
                 }
+                //Make chicken white
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
+
+            //Scaling Chicken and KFC Bucket inversely
             else if(!isStarDone || chickenScale > 0.1){
                 //Scaling Chicken and KFC Bucket inversely
                 currentStage = Stage.Evolve;
                 updateChickenScale(elapsedTime);
                 updateKFCScale(elapsedTime);
+                //Move and change color of background stars
                 if(isStarStart == true){
                     updateStarMovement();
                     updateStarColor();
@@ -1043,6 +1062,7 @@ public class Animation extends JPanel implements Runnable{
 
             double archHeight = fountainArchHeight[i];
             double archLength = Math.abs(fountainArchLength[i]);
+            double archFloor = 300;
 
             double archMidpointX = fountainArchLength[i] + fountainMidpointX;
             double archMidpointY = fountainMidpointY;
@@ -1052,7 +1072,7 @@ public class Animation extends JPanel implements Runnable{
 
             double currentDistantX;
 
-            if (fountainSize[i] >= -1) {
+            if (fountainSize[i] > -1) {
 
                 fountainSize[i] -= shrinkingSpeed;
 
@@ -1069,7 +1089,9 @@ public class Animation extends JPanel implements Runnable{
                 }
                 
                 else {
-                    fountainPositionY[i] += veticalSpeed * (fountainSize[i]/fountainBallsMaxSize);
+                    if(fountainPositionY[i] < archFloor){
+                        fountainPositionY[i] += veticalSpeed * (fountainSize[i]/fountainBallsMaxSize);
+                    }
                 }
 
                 if(archHeight < archLength){
@@ -1349,6 +1371,8 @@ public class Animation extends JPanel implements Runnable{
 
     private void drawEffect() {
         Graphics2D g = effectBuffer.createGraphics();
+        g.setColor(new Color(0, 0, 0, 1));
+        g.fillRect(0,0,600,600);
         if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY && spiralPositionY[0][spiralBalls] < spiralMidpointY){
             drawSpiral(g);
         }
@@ -1373,7 +1397,10 @@ public class Animation extends JPanel implements Runnable{
         for (int i = 0; i < spiralLayers; i++) {   
             for (int j = 0; j < spiralBalls; j++) {
                 if (spiralPositionY[i][spiralBalls] < spiralMidpointY && spiralPositionY[i][spiralBalls] >= spiralEndpointY){
-                    g.fillOval((int)spiralPositionX[i][j] - (int)spiralSize[i][j], (int)spiralPositionY[i][j] - (int)spiralSize[i][j], (int)spiralSize[i][j]*2, (int)spiralSize[i][j]*2);
+                    drawCircle(g, (int)spiralPositionX[i][j], (int)spiralPositionY[i][j], (int)spiralSize[i][j]);
+                    if(canFill((int)spiralPositionX[i][j], (int)spiralPositionY[i][j], (int)spiralSize[i][j])){
+                        floodFillBorder(g, (int)spiralPositionX[i][j], (int)spiralPositionY[i][j],new Color[]{new Color(255,255,255)} ,new Color(255,255,255), effectBuffer);
+                    }
                 }
             }
         }
@@ -1384,7 +1411,10 @@ public class Animation extends JPanel implements Runnable{
         for (int i = 0; i < domeLayers; i++) {   
             for (int j = 0; j < domeBalls; j++) {
                 if (domePositionY[i][j] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
-                    g.fillOval((int)domePositionX[i][j] - (int)domeSize[i][j], (int)domePositionY[i][j] - (int)domeSize[i][j], (int)domeSize[i][j]*2, (int)domeSize[i][j]*2);
+                    drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
+                    if(canFill((int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j])){
+                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j],new Color[]{new Color(255,255,255)} ,new Color(255,255,255), effectBuffer);
+                    }
                 }
             }
         }
@@ -1395,7 +1425,10 @@ public class Animation extends JPanel implements Runnable{
         for (int i = 0; i < ringLayers; i++) {   
             for (int j = 0; j < ringBalls; j++) {
                 if (ringPositionY[i][ringBalls] < ringMidpointY - ringFinalRadius){
-                    g.fillOval((int)ringPositionX[i][j] - (int)ringSize[i][j], (int)ringPositionY[i][j] - (int)ringSize[i][j], (int)ringSize[i][j]*2, (int)ringSize[i][j]*2);
+                    drawCircle(g, (int)ringPositionX[i][j], (int)ringPositionY[i][j], (int)ringSize[i][j]);
+                    if(canFill((int)ringPositionX[i][j], (int)ringPositionY[i][j], (int)ringSize[i][j])){
+                        floodFillBorder(g, (int)ringPositionX[i][j], (int)ringPositionY[i][j],new Color[]{new Color(255,255,255)} ,new Color(255,255,255), effectBuffer);
+                    }
                 }
             }
         }
@@ -1405,9 +1438,19 @@ public class Animation extends JPanel implements Runnable{
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < fountainBalls; i++) {   
             if ((fountainPositionY[i] < fountainMidpointY && fountainDirection[i] == 'U') || fountainDirection[i] == 'D'){
-                g.fillOval((int)fountainPositionX[i] - (int)fountainSize[i], (int)fountainPositionY[i] - (int)fountainSize[i], (int)fountainSize[i]*2, (int)fountainSize[i]*2);
+                drawCircle(g, (int)fountainPositionX[i], (int)fountainPositionY[i], (int)fountainSize[i]);
+                if(canFill((int)fountainPositionX[i], (int)fountainPositionY[i], (int)fountainSize[i])){
+                    floodFillBorder(g, (int)fountainPositionX[i], (int)fountainPositionY[i],new Color[]{new Color(255,255,255)} ,new Color(255,255,255), effectBuffer);
+                }
             }
         }
+    }
+
+    private boolean canFill(int x, int y, int size) {
+        if (x > 0 && x < 600 && y > 0 && y < 600 && size > 1) {
+            return true;
+        }
+        return false;
     }
     
     //=============================================================================================================
