@@ -21,6 +21,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
     BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 
+    //main method
     public static void main(String[] args) {
         Assignment2_65050257_65050270 m = new Assignment2_65050257_65050270();
         JFrame f = new JFrame();
@@ -233,7 +234,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
 
-            //Moving each balls in the layer of the dome
+            //Moving each balls in the layer of the dome and Make chicken white
             else if(!isDomeDone){
                 currentStage = Stage.Evolve;
                 //Moving each balls in the layer of the dome
@@ -264,25 +265,19 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                     updateStarColor();
                 }
             }
-
-            //Moving each balls in the layer of the ring
             else if(!isRingDone){
                 currentStage = Stage.Evolve;
-                //Moving each balls in the layer of the ring
-                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){
+                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
                     updateRing();
                 }
                 else{
                     isRingDone = true;
                 }
-                //Move and change color of background star
                 if(isStarStart == true && starColorSwitch > 0){
                     updateStarMovement();
                     updateStarColor();
                 }
             }
-
-            //Make screen white and clear it
             else if(!isFlashbangDone){
                 //draw KFC Bucket with coloring
                 currentStage = Stage.Evolve;
@@ -295,34 +290,28 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                     drawKFC(false);
                 }
             }
-
-            //Moving each balls in the fountain
             else if(!isFountainDone){
                 currentStage = Stage.Evolve;
-                if (fountainSize[fountainBalls] > 0){
+                if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
                     updateFountain();
                 }
                 else{
                     isFountainDone = true;
                 }
             }
-
-            //bring background back
-            else if(!isClear){
+            else if(!isClear){//dark screen transition at the 4th second
                 currentStage = Stage.Evolve;
                 updateTransparencyToClear();
-            } 
-
-            //Display Message line 3
+            }//6.5 - 99999999 second  
             else if(lineCnt[2] < lineText[2].length()){
+                //Display Message line 3
                 isText = false;
                 isText = true;
                 currentStage = Stage.Text;
                 lineCnt[2] += letterVelocity * elapsedTime / 1000.0;
             }
-
-            //Display Message line 4
             else if(lineCnt[3] < lineText[3].length()){
+                //Display Message line 4
                 currentStage = Stage.Text;
                 lineCnt[3] += letterVelocity * elapsedTime / 1000.0;
             }
@@ -501,7 +490,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
             layerGaps += 400;
         } 
         
-        //Set an angle and a position of each balls in the layer of the ring
+        //Set an angle, a vertical position and a horizontal position of each balls in the layer of the ring
         for (int i = 0; i < ringLayers; i++) { 
             double radius = ringMidpointY - ringPositionY[i][ringBalls];
             for (int j = 0; j < ringBalls; j++) { 
@@ -512,7 +501,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //initialize position of each balls of the fountain
+    //initialize position balls in fountain
     private void initializeFountain() {
 
         Random randomNumber = new Random();
@@ -539,6 +528,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         
     }
 
+    //draw baby chicken on babyBuffer
     private void initializeBabyBuffer() {
         Graphics2D g = babyBuffer.createGraphics();
         
@@ -673,6 +663,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         isDraw = true;
     }
 
+    //draw KFCBucket on KFCBuffer (white or with colors)
     private void drawKFC(boolean isWhite) {
         Graphics2D g = KFCBuffer.createGraphics();
         
@@ -721,6 +712,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //draw KFC detail and coloring
     private void drawKFCDetail() {
         Graphics2D g = KFCBuffer.createGraphics();
 
@@ -823,7 +815,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //decrease tranparency of the blacksceen
+    //decrease transparency of background
     private void updateTransparencyToClear() {
         tranparency -= 0.00001;
         if(tranparency <= 0){
@@ -831,7 +823,8 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //increase and decrease tranparency of the whitesceen
+
+    //add/decrease flashbang transparency
     private void updateFlashbangTransparency() {
         if (!isFlashbangWhite) {            
             flashbangTranparency += 0.0002;
@@ -847,7 +840,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //move position of each star
+    //update star postition
     private void updateStarMovement() {
         
         int minOffsetX = -10;
@@ -872,7 +865,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
 
     }
 
-    //change color of each star
+    //change star color
     private void updateStarColor() {
 
         double colorChangeSpeed = 0.00000095;
@@ -904,7 +897,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         
     }
 
-    //update position and size of each balls in the layer of the spiral
+    //update spiral position
     private void updateSpiral() {
         int baseSize = 12;
         int finalSize = 3;
@@ -988,7 +981,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //update position and size of each balls in the layer of the dome
+    //update Dome Position
     private void updateDome(){
 
         int baseSize = 8;
@@ -1052,7 +1045,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //update position and size of each balls in the layer of the ring
+    //update ring position
     private void updateRing(){
 
         int baseSize = 8;
@@ -1076,16 +1069,16 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //update position and size of each balls of the foutain
+    //update fountain position
     private void updateFountain(){
         double shrinkingSpeed = 0.000001;
         double veticalSpeed = 0.0001;
-        double archFloor = 360;
 
         for (int i = 0; i <= fountainBalls; i++) {
 
             double archHeight = fountainArchHeight[i];
             double archLength = Math.abs(fountainArchLength[i]);
+            double archFloor = 300;
 
             double archMidpointX = fountainArchLength[i] + fountainMidpointX;
             double archMidpointY = fountainMidpointY;
@@ -1147,6 +1140,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //change scale of KFC
     private void updateKFCScale(double elapsedTime) {
         KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
         KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
@@ -1162,6 +1156,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //change scale of Baby Chicken
     private void updateChickenScale(double elapsedTime) {
         chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
         chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
@@ -1187,7 +1182,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
     //=============================================================================================================
 
 
-
+    //paint all buffer
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -1230,6 +1225,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         effectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     }
 
+    //make Baby Chicken turn to white color
     private void whitenChicken() {
         Graphics2D g = babyBuffer.createGraphics();
         Color currentColor = new Color(babyBuffer.getRGB(306, 249));
@@ -1271,6 +1267,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //draw pokemon background
     private void drawBackground(Graphics2D g) {
         //clean screen
         g.setColor(new Color(0,0,0, (255-(int)tranparency)));
@@ -1307,18 +1304,17 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
 
     }
 
-    //draw blackscreen
+    //fade background to black screen
     private void fadeToBlack(Graphics2D g) {
         g.setColor(new Color(0,0,0,(int)tranparency));
         g.fillRect(0, 0, 600, 450);
 
-        //bring blackgroud back
         if (isBlack) {
             drawBackground(g);
         }
     }
     
-    //draw moving star in the background
+    //draw star on buffer
     private void drawStar(Graphics2D g) {
         for (int i = 0; i < starLayers; i++) {
             if(starColorStatus[i] >= 1){
@@ -1355,7 +1351,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         g.fillRoundRect(20, 460, 560, 130, 10, 10);
     }
 
-    //draw text in the text box
+    //draw text on the line
     private void drawText() {
         Graphics2D g = textBoxBuffer.createGraphics();
         String text1 = "";
@@ -1392,7 +1388,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         g.drawString(text2, 35, 560);
     }
 
-    //draw effect on buffer
+    //draw special effect
     private void drawEffect() {
         Graphics2D g = effectBuffer.createGraphics();
         g.setColor(new Color(0, 0, 0, 1));
@@ -1416,7 +1412,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         
     }
 
-    //draw moving balls of the spiral
+    //draw spiral balls effect
     private void drawSpiral(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < spiralLayers; i++) {   
@@ -1431,7 +1427,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //draw moving balls of the dome
+    //draw falling dome
     private void drawDome(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < domeLayers; i++) {   
@@ -1446,7 +1442,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //draw moving balls of the ring
+    //draw balls ring
     private void drawRing(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < ringLayers; i++) {   
@@ -1461,7 +1457,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
-    //draw moving balls of the foutain
+    //draw balls fountain
     private void drawFountain(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < fountainBalls; i++) {   
@@ -1473,8 +1469,8 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
             }
         }
     }
-    
-    //check if the moving ball is exists in the border
+
+    //check if can fill
     private boolean canFill(int x, int y, int size) {
         if (x > 0 && x < 600 && y > 0 && y < 600 && size > 1) {
             return true;
@@ -1578,6 +1574,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //draw circle by midpoint algorithm
     private void drawCircle(Graphics g, int xc, int yc, int r) {
         int x = 0;
         int y = r;
@@ -1598,6 +1595,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //drawElipse by midpoint algorithm
     private void drawElipse(Graphics g, int xc, int yc, int a, int b) {
         int a2 = a*a, b2 = b*b;
         int twoA2 = 2*a2, twoB2 = 2*b2;
@@ -1642,6 +1640,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         }
     }
 
+    //plot 4 point
     private void plotQuadrant(Graphics g, int x, int y, int xc, int yc){
         plot(g, x+xc, y+yc);
         plot(g, x+xc, -y+yc);
@@ -1649,6 +1648,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         plot(g, -x+xc, -y+yc);
     }
 
+    //plot 8 point
     private void plotOctant(Graphics g, int x, int y, int xc, int yc) {
         plot(g, x+xc, y+yc);
         plot(g, x+xc, -y+yc);
@@ -1660,6 +1660,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         plot(g, -y+xc, -x+yc);
     }
 
+    //plot a pixel
     private void plot(Graphics g, int x, int y) {
         g.fillRect(x, y, 1, 1);
     }
@@ -1692,15 +1693,5 @@ enum Stage {
     Text, 
     Evolve,
     KFC;
-
-    // private final Color color;
-
-    // // Stage(String colorCode) {
-    // //     this.color = new Color(Integer.parseInt(colorCode, 16));
-    // // }
-
-    // public Color getColor() {
-    //     return color;
-    // }
 }
 
