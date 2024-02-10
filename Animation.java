@@ -4,12 +4,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -17,16 +13,12 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class Animation extends JPanel implements Runnable,MouseListener{
+public class Animation extends JPanel implements Runnable{
     //Buffers
     BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-
-    public Animation(){
-        addMouseListener(this);
-    }
+    BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 
     public static void main(String[] args) {
         Animation m = new Animation();
@@ -164,8 +156,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         initializeRing();
         initializeFountain();
 
-        drawBabyBuffer();
-        drawWhiteKFC(false);
+        initializeBabyBuffer();
+        drawKFC(true);
         
         while (true) {
             currentTime = System.currentTimeMillis();
@@ -265,31 +257,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             else if(timer <= 25 || chickenScale > 0.1){
                 //Scaling Chicken and KFC Bucket inversely
                 currentStage = Stage.Evolve;
-                chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
-                chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
-                if(chickenScale >= 1){
-                    chickenScale = 1;
-                    chickenScaleVelocity = -chickenScaleVelocity;
-                    chickenScaleAccelerate = -chickenScaleAccelerate;
-                }
-                else if(chickenScale <= 0.0000000000000000000001){
-                    chickenScale = 0.0000000000000000000001;    
-                    chickenScaleVelocity = -chickenScaleVelocity;
-                    chickenScaleAccelerate = -chickenScaleAccelerate;
-                }
-
-                KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
-                KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
-                if(KFCScale >= 1){
-                    KFCScale = 1;
-                    KFCScaleVelocity = -KFCScaleVelocity;
-                    KFCScaleAccelerate = -KFCScaleAccelerate;
-                }
-                else if(KFCScale <= 0.0000000000000000000001){
-                    KFCScale = 0.0000000000000000000001;
-                    KFCScaleVelocity = -KFCScaleVelocity;
-                    KFCScaleAccelerate = -KFCScaleAccelerate;
-                }
+                updateChickenScale(elapsedTime);
+                updateKFCScale(elapsedTime);
             }
             else if(lineCnt[2] < lineText[2].length()){
                 //draw KFC Bucket with coloring
@@ -297,7 +266,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     isKFC = true;
                 }
                 if(isKFC){
-                    drawWhiteKFC(true);
+                    drawKFC(false);
                 }
                 //Display Message line 3
                 isText = true;
@@ -313,6 +282,36 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         
             //Display
             repaint();
+        }
+    }
+
+    private void updateKFCScale(double elapsedTime) {
+        KFCScale += KFCScaleVelocity * elapsedTime / 1000.0;
+        KFCScaleVelocity += KFCScaleAccelerate * elapsedTime / 1000.0;
+        if(KFCScale >= 1){
+            KFCScale = 1;
+            KFCScaleVelocity = -KFCScaleVelocity;
+            KFCScaleAccelerate = -KFCScaleAccelerate;
+        }
+        else if(KFCScale <= 0.0000000000000000000001){
+            KFCScale = 0.0000000000000000000001;
+            KFCScaleVelocity = -KFCScaleVelocity;
+            KFCScaleAccelerate = -KFCScaleAccelerate;
+        }
+    }
+
+    private void updateChickenScale(double elapsedTime) {
+        chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
+        chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
+        if(chickenScale >= 1){
+            chickenScale = 1;
+            chickenScaleVelocity = -chickenScaleVelocity;
+            chickenScaleAccelerate = -chickenScaleAccelerate;
+        }
+        else if(chickenScale <= 0.0000000000000000000001){
+            chickenScale = 0.0000000000000000000001;    
+            chickenScaleVelocity = -chickenScaleVelocity;
+            chickenScaleAccelerate = -chickenScaleAccelerate;
         }
     }
 
@@ -408,144 +407,111 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         isFountainDone = false;
     }
 
-    private void drawKFC() {
-        Graphics2D g = KFCBuffer.createGraphics();
+    private void initializeStar() {
+        double layerGaps = 0;
+        double starBaseInnerRadius = 11.5;
+        double starBaseOuterRadius = 15;
+        double[] starAngle = new double[starPoints*2];
 
-        g.setColor(Color.BLACK);
-        //rim
-        drawCurve(g, 71+165, 65+165, 100+165, 78+165, 178+165, 78+165, 208+165, 65+165);
-        drawCurve(g, 71+165, 62+165, 100+165, 75+165, 178+165, 75+165, 208+165, 62+165);
-        //red bar 1
-        drawCurve(g, 82+165, 71+165, 82+165, 71+165, 92+165, 144+165, 92+165, 144+165);
-        drawCurve(g, 92+165, 144+165, 92+165, 144+165, 105+165, 148+165, 105+165, 148+165);
-        drawCurve(g, 105+165, 148+165, 105+165, 148+165, 97+165, 73+165, 97+165, 73+165);
-        //red bar 2
-        drawCurve(g, 189+165, 71+165, 189+165, 71+165, 182+165, 145+165, 182+165, 145+165);
-        drawCurve(g, 182+165, 145+165, 182+165, 145+165, 191+165, 141+165, 191+165, 141+165);
-        drawCurve(g, 191+165, 141+165, 191+165, 141+165, 202+165, 68+165, 202+165, 68+165);
+        for (int i = 0; i < starLayers; i++) {
+            starColorStatus[i] = 0;
+            for (int j = 0; j < starPoints*2; j++) {  
 
-        drawCurve(g, 97+165, 45+165, 102+165, 47+165, 106+165, 43+165, 112+165, 45+165);
-        drawCurve(g, 112+165, 45+165, 117+165, 52+165, 132+165, 50+165, 132+165, 50+165);
-        drawCurve(g, 132+165, 50+165, 132+165, 50+165, 136+165, 56+165, 136+165, 56+165);
+                starAngle[j] = (360 / ((double)starPoints * 2)) * j;
 
-        drawCurve(g, 120+165, 70+165, 124+165, 65+165, 130+165, 65+165, 130+165, 65+165);
-        drawCurve(g, 130+165, 65+165, 130+165, 65+165, 136+165, 56+165, 136+165, 56+165);
-        drawCurve(g, 136+165, 56+165, 143+165, 49+165, 158+165, 50+165, 158+165, 50+165);
-        drawCurve(g, 158+165, 50+165, 161+165, 51+165, 157+165, 58+165, 157+165, 58+165);
-        drawCurve(g, 157+165, 58+165, 157+165, 58+165, 161+165, 66+165, 153+165, 72+165);
-
-        drawCurve(g, 157+165, 58+165, 163+165, 64+165, 171+165, 61+165, 171+165, 61+165);
-        drawCurve(g, 171+165, 61+165, 176+165, 63+165, 179+165, 68+165, 179+165, 68+165);
-
-        drawCurve(g, 151+165, 50+165, 145+165, 47+165, 144+165, 40+165, 144+165, 40+165);
-
-        drawCurve(g, 149+165, 33+165, 155+165, 28+165, 167+165, 32+165, 167+165, 32+165);
-        drawCurve(g, 167+165, 32+165, 167+165, 32+165, 178+165, 40+165, 178+165, 40+165);
-        drawCurve(g, 178+165, 40+165, 178+165, 40+165, 179+165, 44+165, 179+165, 44+165);
-        drawCurve(g, 179+165, 44+165, 190+165, 50+165, 197+165, 65+165, 197+165, 65+165);
-
-        drawCurve(g, 149+165, 25+165, 151+165, 33+165, 144+165, 40+165, 144+165, 40+165);
-        drawCurve(g, 144+165, 40+165, 143+165, 49+165, 132+165, 50+165, 132+165, 50+165);
-        //Sander
-        drawCurve(g, 132+165, 93+165, 138+165, 84+165, 155+165, 85+165, 160+165, 97+165);
-        drawCurve(g, 160+165, 97+165, 160+165, 97+165, 163+165, 101+165, 161+165, 107+165);
-        drawCurve(g, 161+165, 107+165, 161+165, 107+165, 158+165, 112+165, 158+165, 112+165);
-        drawCurve(g, 161+165, 107+165, 161+165, 107+165, 156+165, 99+165, 156+165, 99+165);
-        drawCurve(g, 161+165, 107+165, 164+165, 107+165, 161+165, 120+165, 157+165, 120+165);
-        drawCurve(g, 157+165, 120+165, 157+165, 128+165, 154+165, 132+165, 148+165, 133+165);
-        drawCurve(g, 148+165, 133+165, 148+165, 133+165, 145+165, 138+165, 145+165, 138+165);
-        drawCurve(g, 145+165, 138+165, 145+165, 138+165, 139+165, 132+165, 140+165, 124+165);
-        drawCurve(g, 139+165, 132+165, 132+165, 132+165, 127+165, 109+165, 129+165, 109+165);
-        drawCurve(g, 129+165, 109+165, 124+165, 103+165, 128+165, 97+165, 128+165, 97+165);
-
-        drawCurve(g, 129+165, 109+165, 125+165, 108+165, 124+165, 109+165, 130+165, 119+165);
-
-        drawCurve(g, 128+165, 97+165, 128+165, 97+165, 125+165, 95+165, 125+165, 95+165);
-        drawCurve(g, 125+165, 95+165, 135+165, 92+165, 144+165, 96+165, 144+165, 96+165);
-        drawCurve(g, 144+165, 96+165, 135+165, 94+165, 130+165, 99+165, 129+165, 109+165);
-
-        drawCurve(g, 135+165, 122+165, 142+165, 126+165, 147+165, 126+165, 152+165, 121+165);
-
-        drawCurve(g, 141+165, 116+165, 142+165, 120+165, 147+165, 120+165, 148+165, 116+165);
-        drawCurve(g, 148+165, 116+165, 148+165, 116+165, 152+165, 121+165, 152+165, 121+165);
-        drawCurve(g, 135+165, 122+165, 135+165, 122+165, 141+165, 116+165, 141+165, 116+165);
-
-        drawCurve(g, 135+165, 106+165, 135+165, 106+165, 140+165, 110+165, 140+165, 110+165);
-        drawCurve(g, 136+165, 113+165, 136+165, 113+165, 140+165, 110+165, 140+165, 110+165);
-
-        drawCurve(g, 153+165, 106+165, 153+165, 106+165, 148+165, 110+165, 148+165, 110+165);
-        drawCurve(g, 153+165, 114+165, 153+165, 114+165, 148+165, 110+165, 148+165, 110+165);
-
-        //Logo
-        drawCurve(g, 130+165, 160+160, 130+165, 160+160, 129+165, 168+160, 129+165, 168+160);
-        drawCurve(g, 129+165, 168+160, 129+165, 168+160, 137+165, 169+160, 137+165, 169+160);
-        drawCurve(g, 137+165, 169+160, 137+165, 169+160, 138+165, 160+160, 138+165, 160+160);
-
-        drawCurve(g, 142+165, 169+160, 142+165, 169+160, 143+165, 160+160, 143+165, 160+160);
-        drawCurve(g, 143+165, 160+160, 143+165, 160+160, 150+165, 160+160, 150+165, 160+160);
-        drawCurve(g, 143+165, 164+160, 143+165, 164+160, 148+165, 164+160, 148+165, 164+160);
-
-        drawCurve(g, 155+165, 168+160, 150+165, 166+160, 152+165, 159+160, 157+165, 159+160);
-        drawCurve(g, 155+165, 168+160, 162+165, 167+160, 163+165, 162+160, 157+165, 159+160);
-        
-        floodFill(g, 255, 257, Color.RED, KFCBuffer);
-        floodFill(g, 357, 268, Color.RED, KFCBuffer);
-        floodFill(g, 269, 224, Color.ORANGE, KFCBuffer);
-        floodFill(g, 288, 198, Color.ORANGE, KFCBuffer);
-        floodFill(g, 331, 211, Color.ORANGE, KFCBuffer);
-        floodFill(g, 335, 193, Color.ORANGE, KFCBuffer);
-        floodFill(g, 309, 227, Color.ORANGE, KFCBuffer);
-        floodFill(g, 329, 232, Color.ORANGE, KFCBuffer);
-        floodFill(g, 306, 215, Color.ORANGE, KFCBuffer);
-        isKFC = false;
-    }
-
-    private void drawWhiteKFC(boolean isBlack) {
-        Graphics2D g = KFCBuffer.createGraphics();
-        
-        g.setColor(new Color(255,255,255,1));
-        g.fillRect(0, 0, 600, 600);
-        if(isBlack){
-            g.setColor(Color.black);
-        }
-        else{
-            g.setColor(new Color(255, 255, 255));
-        }
-
-        //left
-        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 90+165, 168+165, 90+165, 168+165);
-        //bottom
-        drawCurve(g, 90+165, 168+165, 122+165, 181+165, 159+165, 181+165, 190+165, 168+165);
-        //right
-        drawCurve(g, 190+165, 168+165, 190+165, 168+165, 205+165, 67+165, 205+165, 67+165);
-
-        //left rim
-        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 74+165, 62+165, 74+165, 62+165);
-        //right rim
-        drawCurve(g, 202+165, 62+165, 202+165, 62+165, 205+165, 67+165, 205+165, 67+165);
-
-        //chicken
-        drawCurve(g, 74+165, 62+165, 74+165, 62+165, 79+165, 54+165, 79+165, 54+165);
-        drawCurve(g, 79+165, 54+165, 79+165, 54+165, 82+165, 53+165, 83+165, 55+165);
-        drawCurve(g, 83+165, 55+165, 83+165, 55+165, 97+165, 45+165, 97+165, 45+165);
-
-        drawCurve(g, 97+165, 45+165, 92+165, 39+165, 91+165, 36+165, 97+165, 34+165);
-        drawCurve(g, 97+165, 34+165, 97+165, 34+165, 107+165, 31+165, 111+165, 23+165);
-        drawCurve(g, 111+165, 23+165, 111+165, 23+165, 129+165, 17+165, 129+165, 17+165);
-        drawCurve(g, 129+165, 17+165, 129+165, 17+165, 149+165, 25+165, 149+165, 25+165);
-
-        drawCurve(g, 149+165, 25+165, 149+165 ,25+165, 150+165, 21+165, 157+165, 25+165);
-        drawCurve(g, 157+165, 25+165, 163+165, 21+165, 171+165, 21+165, 182+165, 30+165);
-        drawCurve(g, 182+165, 30+165, 187+165, 36+165, 187+165, 40+165, 183+165, 43+165);
-        drawCurve(g, 183+165, 43+165, 194+165, 42+165, 202+165, 49+165, 202+165, 62+165);
-        if(isBlack){
-            drawKFC();
-        }else{
-            floodFill(g, 143+165, 82+165, Color.WHITE, KFCBuffer);
+                if(j % 2 == 0){
+                    starPositionX[i][j] = starMidpointX - ((starBaseOuterRadius * layerGaps) * Math.cos(Math.PI * 2 * starAngle[j] / 360));
+                    starPositionY[i][j] = starMidpointY - ((starBaseOuterRadius * layerGaps) * Math.sin(Math.PI * 2 * starAngle[j] / 360));
+                }
+                else{
+                    starPositionX[i][j] = starMidpointX - ((starBaseInnerRadius * layerGaps) * Math.cos(Math.PI * 2 * starAngle[j] / 360));
+                    starPositionY[i][j] = starMidpointY - ((starBaseInnerRadius * layerGaps) * Math.sin(Math.PI * 2 * starAngle[j] / 360));
+                }
+            }
+            layerGaps += 3.2;
         }
     }
 
-    private void drawBabyBuffer() {
+    private void initializeSpiral() {
+
+        //Set a horizontal position of each balls in the layer of the spiral
+        for (double[] px : spiralPositionX) {
+            px[3] = 150;            //4th ball of each layer at x = 150
+            px[0] = px[2] = 300;    //1st ball and 3rd ball of each layer at x = 300
+            px[1] = 450;            //2nd ball of each layer at x = 450
+        }
+
+        //Set a vertical position of each layer of the spiral
+        int layerGaps = 0;
+        for (double[] py : spiralPositionY) {
+            py[spiralBalls] = spiralMidpointY + layerGaps;
+            layerGaps += 2;
+        }
+
+        //Set a horizontal direction of each balls in the layer of the spiral
+        for (char[] d : spiralDirection) {
+            d[0] = d[1] = 'L'; //1st ball and 2st ball of each layer move to the left
+            d[2] = d[3] = 'R'; //3rd ball and 4th ball of each layer move to the right
+        }
+    }
+
+    private void initializeDome() {
+
+        //Set a vertical position of each layer of the dome
+        int layerGaps = 0;
+        for (double[] py : domePositionY) {
+            py[domeBalls] = domeMidpointY - layerGaps;
+            layerGaps += 30;
+        }
+    }
+
+    private void initializeRing() {
+     
+        //Set a vertical position of each layer of the spiral
+        int layerGaps = 0;
+        for (double[] py : ringPositionY) {
+            py[ringBalls] = (ringMidpointY - ringBaseRadius) - layerGaps;
+            layerGaps += 400;
+        } 
+        
+        //Set an angle, a vertical position and a horizontal position of each balls in the layer of the ring
+        for (int i = 0; i < ringLayers; i++) { 
+            double radius = ringMidpointY - ringPositionY[i][ringBalls];
+            for (int j = 0; j < ringBalls; j++) { 
+                ringAngle[i][j] = (360 / (double)ringBalls) * j;
+                ringPositionX[i][j] = ringMidpointX - (radius * Math.cos(Math.PI * 2 * ringAngle[i][j] / 360));
+                ringPositionY[i][j] = ringMidpointY - (radius * Math.sin(Math.PI * 2 * ringAngle[i][j] / 360));
+            }
+        }
+    }
+
+    private void initializeFountain() {
+
+        Random randomNumber = new Random();
+
+        int archMinLength = 0;
+        int archMaxLength = 100;
+        int archMinHeight = 200;
+        int archMaxHeight = 350;
+        int archMaxGaps = 50;
+
+        for (int i = 0; i < fountainBalls; i++) {
+            fountainSize[i] = fountainBallsMinSize + (fountainBallsMaxSize - fountainBallsMinSize) * randomNumber.nextDouble();
+            fountainArchHeight[i] = archMinHeight + randomNumber.nextInt(archMaxHeight - archMinHeight - 1);
+            fountainArchLength[i] = (archMinLength - randomNumber.nextInt(archMaxLength - archMinLength - 1)) * (Math.pow((-1) , randomNumber.nextInt(2)));
+            fountainPositionY[i] = fountainMidpointY + randomNumber.nextInt(archMaxGaps + 1);
+            fountainDirection[i] = 'U';
+        }
+
+        fountainSize[fountainBalls] = fountainBallsMaxSize + 1;
+        fountainArchHeight[fountainBalls] = archMaxHeight;
+        fountainArchLength[fountainBalls] = archMaxLength;
+        fountainPositionY[fountainBalls] = fountainMidpointY + archMaxGaps;
+        fountainDirection[fountainBalls] = 'U';
+        
+    }
+
+    private void initializeBabyBuffer() {
         Graphics2D g = babyBuffer.createGraphics();
         
         g.setColor(new Color(255,255,255,1));
@@ -670,111 +636,141 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         isDraw = true;
     }
 
-    private void initializeStar() {
-
-        double layerGaps = 0;
-        double starBaseInnerRadius = 11.5;
-        double starBaseOuterRadius = 15;
-        double[] starAngle = new double[starPoints*2];
-
-        for (int i = 0; i < starLayers; i++) {
-            starColorStatus[i] = 0;
-            for (int j = 0; j < starPoints*2; j++) {  
-
-                starAngle[j] = (360 / ((double)starPoints * 2)) * j;
-
-                if(j % 2 == 0){
-                    starPositionX[i][j] = starMidpointX - ((starBaseOuterRadius * layerGaps) * Math.cos(Math.PI * 2 * starAngle[j] / 360));
-                    starPositionY[i][j] = starMidpointY - ((starBaseOuterRadius * layerGaps) * Math.sin(Math.PI * 2 * starAngle[j] / 360));
-                }
-                else{
-                    starPositionX[i][j] = starMidpointX - ((starBaseInnerRadius * layerGaps) * Math.cos(Math.PI * 2 * starAngle[j] / 360));
-                    starPositionY[i][j] = starMidpointY - ((starBaseInnerRadius * layerGaps) * Math.sin(Math.PI * 2 * starAngle[j] / 360));
-                }
-            }
-            layerGaps += 3.2;
-        }
-
-    }
-
-    private void initializeSpiral() {
-
-        //Set a horizontal position of each balls in the layer of the spiral
-        for (double[] px : spiralPositionX) {
-            px[3] = 150;            //4th ball of each layer at x = 150
-            px[0] = px[2] = 300;    //1st ball and 3rd ball of each layer at x = 300
-            px[1] = 450;            //2nd ball of each layer at x = 450
-        }
-
-        //Set a vertical position of each layer of the spiral
-        int layerGaps = 0;
-        for (double[] py : spiralPositionY) {
-            py[spiralBalls] = spiralMidpointY + layerGaps;
-            layerGaps += 2;
-        }
-
-        //Set a horizontal direction of each balls in the layer of the spiral
-        for (char[] d : spiralDirection) {
-            d[0] = d[1] = 'L'; //1st ball and 2st ball of each layer move to the left
-            d[2] = d[3] = 'R'; //3rd ball and 4th ball of each layer move to the right
-        }
-    }
-
-    private void initializeDome() {
-
-        //Set a vertical position of each layer of the dome
-        int layerGaps = 0;
-        for (double[] py : domePositionY) {
-            py[domeBalls] = domeMidpointY - layerGaps;
-            layerGaps += 30;
-        }
-    }
-
-    private void initializeRing() {
-     
-        //Set a vertical position of each layer of the spiral
-        int layerGaps = 0;
-        for (double[] py : ringPositionY) {
-            py[ringBalls] = (ringMidpointY - ringBaseRadius) - layerGaps;
-            layerGaps += 400;
-        } 
+    private void drawKFC(boolean isWhite) {
+        Graphics2D g = KFCBuffer.createGraphics();
         
-        //Set an angle, a vertical position and a horizontal position of each balls in the layer of the ring
-        for (int i = 0; i < ringLayers; i++) { 
-            double radius = ringMidpointY - ringPositionY[i][ringBalls];
-            for (int j = 0; j < ringBalls; j++) { 
-                ringAngle[i][j] = (360 / (double)ringBalls) * j;
-                ringPositionX[i][j] = ringMidpointX - (radius * Math.cos(Math.PI * 2 * ringAngle[i][j] / 360));
-                ringPositionY[i][j] = ringMidpointY - (radius * Math.sin(Math.PI * 2 * ringAngle[i][j] / 360));
-            }
+        g.setColor(new Color(255,255,255,1));
+        g.fillRect(0, 0, 600, 600);
+        if(!isWhite){
+            g.setColor(Color.black);
+        }
+        else{
+            g.setColor(new Color(255, 255, 255));
         }
 
+        //left
+        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 90+165, 168+165, 90+165, 168+165);
+        //bottom
+        drawCurve(g, 90+165, 168+165, 122+165, 181+165, 159+165, 181+165, 190+165, 168+165);
+        //right
+        drawCurve(g, 190+165, 168+165, 190+165, 168+165, 205+165, 67+165, 205+165, 67+165);
+
+        //left rim
+        drawCurve(g, 75+165, 67+165, 75+165, 67+165, 74+165, 62+165, 74+165, 62+165);
+        //right rim
+        drawCurve(g, 202+165, 62+165, 202+165, 62+165, 205+165, 67+165, 205+165, 67+165);
+
+        //chicken
+        drawCurve(g, 74+165, 62+165, 74+165, 62+165, 79+165, 54+165, 79+165, 54+165);
+        drawCurve(g, 79+165, 54+165, 79+165, 54+165, 82+165, 53+165, 83+165, 55+165);
+        drawCurve(g, 83+165, 55+165, 83+165, 55+165, 97+165, 45+165, 97+165, 45+165);
+
+        drawCurve(g, 97+165, 45+165, 92+165, 39+165, 91+165, 36+165, 97+165, 34+165);
+        drawCurve(g, 97+165, 34+165, 97+165, 34+165, 107+165, 31+165, 111+165, 23+165);
+        drawCurve(g, 111+165, 23+165, 111+165, 23+165, 129+165, 17+165, 129+165, 17+165);
+        drawCurve(g, 129+165, 17+165, 129+165, 17+165, 149+165, 25+165, 149+165, 25+165);
+
+        drawCurve(g, 149+165, 25+165, 149+165 ,25+165, 150+165, 21+165, 157+165, 25+165);
+        drawCurve(g, 157+165, 25+165, 163+165, 21+165, 171+165, 21+165, 182+165, 30+165);
+        drawCurve(g, 182+165, 30+165, 187+165, 36+165, 187+165, 40+165, 183+165, 43+165);
+        drawCurve(g, 183+165, 43+165, 194+165, 42+165, 202+165, 49+165, 202+165, 62+165);
+        if(!isWhite){
+            drawKFCDetail();
+        }else{
+            floodFill(g, 143+165, 82+165, Color.WHITE, KFCBuffer);
+        }
     }
 
-    private void initializeFountain() {
+    private void drawKFCDetail() {
+        Graphics2D g = KFCBuffer.createGraphics();
 
-        Random randomNumber = new Random();
+        g.setColor(Color.BLACK);
+        //rim
+        drawCurve(g, 71+165, 65+165, 100+165, 78+165, 178+165, 78+165, 208+165, 65+165);
+        drawCurve(g, 71+165, 62+165, 100+165, 75+165, 178+165, 75+165, 208+165, 62+165);
+        //red bar 1
+        drawCurve(g, 82+165, 71+165, 82+165, 71+165, 92+165, 144+165, 92+165, 144+165);
+        drawCurve(g, 92+165, 144+165, 92+165, 144+165, 105+165, 148+165, 105+165, 148+165);
+        drawCurve(g, 105+165, 148+165, 105+165, 148+165, 97+165, 73+165, 97+165, 73+165);
+        //red bar 2
+        drawCurve(g, 189+165, 71+165, 189+165, 71+165, 182+165, 145+165, 182+165, 145+165);
+        drawCurve(g, 182+165, 145+165, 182+165, 145+165, 191+165, 141+165, 191+165, 141+165);
+        drawCurve(g, 191+165, 141+165, 191+165, 141+165, 202+165, 68+165, 202+165, 68+165);
 
-        int archMinLength = 0;
-        int archMaxLength = 100;
-        int archMinHeight = 200;
-        int archMaxHeight = 350;
-        int archMaxGaps = 50;
+        drawCurve(g, 97+165, 45+165, 102+165, 47+165, 106+165, 43+165, 112+165, 45+165);
+        drawCurve(g, 112+165, 45+165, 117+165, 52+165, 132+165, 50+165, 132+165, 50+165);
+        drawCurve(g, 132+165, 50+165, 132+165, 50+165, 136+165, 56+165, 136+165, 56+165);
 
-        for (int i = 0; i < fountainBalls; i++) {
-            fountainSize[i] = fountainBallsMinSize + (fountainBallsMaxSize - fountainBallsMinSize) * randomNumber.nextDouble();
-            fountainArchHeight[i] = archMinHeight + randomNumber.nextInt(archMaxHeight - archMinHeight - 1);
-            fountainArchLength[i] = (archMinLength - randomNumber.nextInt(archMaxLength - archMinLength - 1)) * (Math.pow((-1) , randomNumber.nextInt(2)));
-            fountainPositionY[i] = fountainMidpointY + randomNumber.nextInt(archMaxGaps + 1);
-            fountainDirection[i] = 'U';
-        }
+        drawCurve(g, 120+165, 70+165, 124+165, 65+165, 130+165, 65+165, 130+165, 65+165);
+        drawCurve(g, 130+165, 65+165, 130+165, 65+165, 136+165, 56+165, 136+165, 56+165);
+        drawCurve(g, 136+165, 56+165, 143+165, 49+165, 158+165, 50+165, 158+165, 50+165);
+        drawCurve(g, 158+165, 50+165, 161+165, 51+165, 157+165, 58+165, 157+165, 58+165);
+        drawCurve(g, 157+165, 58+165, 157+165, 58+165, 161+165, 66+165, 153+165, 72+165);
 
-        fountainSize[fountainBalls] = fountainBallsMaxSize + 1;
-        fountainArchHeight[fountainBalls] = archMaxHeight;
-        fountainArchLength[fountainBalls] = archMaxLength;
-        fountainPositionY[fountainBalls] = fountainMidpointY + archMaxGaps;
-        fountainDirection[fountainBalls] = 'U';
+        drawCurve(g, 157+165, 58+165, 163+165, 64+165, 171+165, 61+165, 171+165, 61+165);
+        drawCurve(g, 171+165, 61+165, 176+165, 63+165, 179+165, 68+165, 179+165, 68+165);
+
+        drawCurve(g, 151+165, 50+165, 145+165, 47+165, 144+165, 40+165, 144+165, 40+165);
+
+        drawCurve(g, 149+165, 33+165, 155+165, 28+165, 167+165, 32+165, 167+165, 32+165);
+        drawCurve(g, 167+165, 32+165, 167+165, 32+165, 178+165, 40+165, 178+165, 40+165);
+        drawCurve(g, 178+165, 40+165, 178+165, 40+165, 179+165, 44+165, 179+165, 44+165);
+        drawCurve(g, 179+165, 44+165, 190+165, 50+165, 197+165, 65+165, 197+165, 65+165);
+
+        drawCurve(g, 149+165, 25+165, 151+165, 33+165, 144+165, 40+165, 144+165, 40+165);
+        drawCurve(g, 144+165, 40+165, 143+165, 49+165, 132+165, 50+165, 132+165, 50+165);
+        //Sander
+        drawCurve(g, 132+165, 93+165, 138+165, 84+165, 155+165, 85+165, 160+165, 97+165);
+        drawCurve(g, 160+165, 97+165, 160+165, 97+165, 163+165, 101+165, 161+165, 107+165);
+        drawCurve(g, 161+165, 107+165, 161+165, 107+165, 158+165, 112+165, 158+165, 112+165);
+        drawCurve(g, 161+165, 107+165, 161+165, 107+165, 156+165, 99+165, 156+165, 99+165);
+        drawCurve(g, 161+165, 107+165, 164+165, 107+165, 161+165, 120+165, 157+165, 120+165);
+        drawCurve(g, 157+165, 120+165, 157+165, 128+165, 154+165, 132+165, 148+165, 133+165);
+        drawCurve(g, 148+165, 133+165, 148+165, 133+165, 145+165, 138+165, 145+165, 138+165);
+        drawCurve(g, 145+165, 138+165, 145+165, 138+165, 139+165, 132+165, 140+165, 124+165);
+        drawCurve(g, 139+165, 132+165, 132+165, 132+165, 127+165, 109+165, 129+165, 109+165);
+        drawCurve(g, 129+165, 109+165, 124+165, 103+165, 128+165, 97+165, 128+165, 97+165);
+
+        drawCurve(g, 129+165, 109+165, 125+165, 108+165, 124+165, 109+165, 130+165, 119+165);
+
+        drawCurve(g, 128+165, 97+165, 128+165, 97+165, 125+165, 95+165, 125+165, 95+165);
+        drawCurve(g, 125+165, 95+165, 135+165, 92+165, 144+165, 96+165, 144+165, 96+165);
+        drawCurve(g, 144+165, 96+165, 135+165, 94+165, 130+165, 99+165, 129+165, 109+165);
+
+        drawCurve(g, 135+165, 122+165, 142+165, 126+165, 147+165, 126+165, 152+165, 121+165);
+
+        drawCurve(g, 141+165, 116+165, 142+165, 120+165, 147+165, 120+165, 148+165, 116+165);
+        drawCurve(g, 148+165, 116+165, 148+165, 116+165, 152+165, 121+165, 152+165, 121+165);
+        drawCurve(g, 135+165, 122+165, 135+165, 122+165, 141+165, 116+165, 141+165, 116+165);
+
+        drawCurve(g, 135+165, 106+165, 135+165, 106+165, 140+165, 110+165, 140+165, 110+165);
+        drawCurve(g, 136+165, 113+165, 136+165, 113+165, 140+165, 110+165, 140+165, 110+165);
+
+        drawCurve(g, 153+165, 106+165, 153+165, 106+165, 148+165, 110+165, 148+165, 110+165);
+        drawCurve(g, 153+165, 114+165, 153+165, 114+165, 148+165, 110+165, 148+165, 110+165);
+
+        //Logo
+        drawCurve(g, 130+165, 160+160, 130+165, 160+160, 129+165, 168+160, 129+165, 168+160);
+        drawCurve(g, 129+165, 168+160, 129+165, 168+160, 137+165, 169+160, 137+165, 169+160);
+        drawCurve(g, 137+165, 169+160, 137+165, 169+160, 138+165, 160+160, 138+165, 160+160);
+
+        drawCurve(g, 142+165, 169+160, 142+165, 169+160, 143+165, 160+160, 143+165, 160+160);
+        drawCurve(g, 143+165, 160+160, 143+165, 160+160, 150+165, 160+160, 150+165, 160+160);
+        drawCurve(g, 143+165, 164+160, 143+165, 164+160, 148+165, 164+160, 148+165, 164+160);
+
+        drawCurve(g, 155+165, 168+160, 150+165, 166+160, 152+165, 159+160, 157+165, 159+160);
+        drawCurve(g, 155+165, 168+160, 162+165, 167+160, 163+165, 162+160, 157+165, 159+160);
         
+        floodFill(g, 255, 257, Color.RED, KFCBuffer);
+        floodFill(g, 357, 268, Color.RED, KFCBuffer);
+        floodFill(g, 269, 224, Color.ORANGE, KFCBuffer);
+        floodFill(g, 288, 198, Color.ORANGE, KFCBuffer);
+        floodFill(g, 331, 211, Color.ORANGE, KFCBuffer);
+        floodFill(g, 335, 193, Color.ORANGE, KFCBuffer);
+        floodFill(g, 309, 227, Color.ORANGE, KFCBuffer);
+        floodFill(g, 329, 232, Color.ORANGE, KFCBuffer);
+        floodFill(g, 306, 215, Color.ORANGE, KFCBuffer);
+        isKFC = false;
     }
     
     private void updateTransparency(double elapsedTime) {
@@ -830,8 +826,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     break;
                 }
             }
-        };
-
+        }
     }
 
     private void updateSpiral() {
@@ -1004,7 +999,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     private void updateFountain(){
-
         double shrinkingSpeed = 0.000001;
         double veticalSpeed = 0.0001;
 
@@ -1648,23 +1642,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void plot(Graphics g, int x, int y) {
         g.fillRect(x, y, 1, 1);
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        System.out.println("Click at "+ e.getX() +", "+e.getY());
-    }
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-    @Override
-    public void mouseExited(MouseEvent e) {
     }
 }
 
