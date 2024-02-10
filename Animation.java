@@ -19,7 +19,7 @@ import javax.swing.JPanel;
 public class Animation extends JPanel implements Runnable,MouseListener{
     //Buffers
     BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    BufferedImage EffectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage effectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
@@ -53,17 +53,17 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     boolean isDraw;
     boolean isText;
     boolean isKFC;
+    double transition;
     double whitenOpacity;
-
+    
     double lineCnt[] = new double[4];
     final String lineText[] = new String[4];
-
+    
     //------------------------------------------------------------------------------
     //                                 Background
     //------------------------------------------------------------------------------
     
     double tranparency;
-    double transition;
 
     int starLayers;
     int starPoints;
@@ -121,13 +121,17 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     int fountainBallsMaxSize;
     int fountainMidpointX;
     int fountainMidpointY;
-    boolean isFountainDone;
     char[] fountainDirection;
     double[] fountainSize;
     double[] fountainPositionX;
     double[] fountainPositionY;
     double[] fountainArchLength;
     double[] fountainArchHeight;
+    boolean isFountainDone;
+
+    int flashbangTranparency;
+    boolean isFlashbangWhite;
+    boolean isFlashbangDone;
 
     //------------------------------------------------------------------------------
     //                                Chicken
@@ -173,14 +177,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             lastTime = currentTime;
             
             timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
-
-            if (isStarStart == true) {
-                if(timer * 100 % 1 == 0 && starColorSwitch > 0){
-                    updateStarMovement();
-                    updateStarColor();
-                }
-            }
-
             //0 - 3 second
             if(timer <= 3){
                 //do nothing
@@ -216,6 +212,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 updateTransparency(elapsedTime);
             }//6.5 - 99999999 second
             else if(timer <= 12.5 && timer * 1000 % 1 == 0 || !isSpiralDone){
+                transition = 0;
                 isStarStart = true;
                 currentStage = Stage.Evolve;
                 if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){ //Moving each balls in the layer of the spiral
@@ -226,9 +223,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     isWaiting = true;
                     isSpiralDone = true;
                 }
+                // if(isStarStart == true && starColorSwitch > 0){
+                //     updateStarMovement();
+                //     updateStarColor();
+                // }
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-            else if(timer <= 15.5 && timer * 1000 % 1 == 0 || !isDomeDone){ //Moving each balls in the layer of the spiral and Make chicken white
+            else if(timer <= 15.5 && timer * 100 % 1 == 0 || !isDomeDone){ //Moving each balls in the layer of the spiral and Make chicken white
                 currentStage = Stage.Evolve;
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
                     isWaiting = false;
@@ -238,31 +239,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     isWaiting = true;
                     isDomeDone = true;
                 }
+                // if(isStarStart == true && starColorSwitch > 0){
+                //     updateStarMovement();
+                //     updateStarColor();
+                // }
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-            else if(timer <= 18.5 && timer * 1000 % 1 == 0 || !isRingDone){
-                currentStage = Stage.Evolve;
-                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
-                    isWaiting = false;
-                    updateRing();
-                }
-                else{
-                    isWaiting = true;
-                    isRingDone = true;
-                }
-            }
-            else if(timer <= 21.5 && timer * 1000 % 1 == 0 || !isFountainDone){
-                currentStage = Stage.Evolve;
-                if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
-                    isWaiting = false;
-                    updateFountain();
-                }
-                else{
-                    isWaiting = true;
-                    isFountainDone = true;
-                }
-            }
-            else if(timer <= 25 || chickenScale > 0.1){
+            else if(timer <= 23.5 || chickenScale > 0.1){
                 //Scaling Chicken and KFC Bucket inversely
                 currentStage = Stage.Evolve;
                 chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
@@ -290,7 +273,53 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     KFCScaleVelocity = -KFCScaleVelocity;
                     KFCScaleAccelerate = -KFCScaleAccelerate;
                 }
+                // if(timer * 100 % 1 == 0 && isStarStart == true && starColorSwitch > 0){
+                //     updateStarMovement();
+                //     updateStarColor();
+                // }
             }
+            else if(timer <= 26.5 && timer * 1000 % 1 == 0 || !isRingDone){
+                currentStage = Stage.Evolve;
+                if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
+                    isWaiting = false;
+                    updateRing();
+                }
+                else{
+                    isWaiting = true;
+                    isRingDone = true;
+                }
+                // if(isStarStart == true && starColorSwitch > 0){
+                //     updateStarMovement();
+                //     updateStarColor();
+                // }
+            }
+            else if(timer <= 28.5 && timer * 1000 % 1 == 0 || !isFlashbangDone){
+                currentStage = Stage.Evolve;
+                if (flashbangTranparency <= 0 || !isFlashbangWhite){
+                    isWaiting = false;
+                    updateFlashbangTransparency();
+                    int a = 0;
+                }
+                else{
+                    isWaiting = true;
+                    isFlashbangDone = true;
+                }
+            }
+            else if(timer <= 31.5 && timer * 1000 % 1 == 0 || !isFountainDone){
+                currentStage = Stage.Evolve;
+                if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
+                    isWaiting = false;
+                    updateFountain();
+                }
+                else{
+                    isWaiting = true;
+                    isFountainDone = true;
+                }
+                // if(isStarStart == true && starColorSwitch > 0){
+                //     updateStarMovement();
+                //     updateStarColor();
+                // }
+            }  
             else if(lineCnt[2] < lineText[2].length()){
                 //draw KFC Bucket with coloring
                 if(!isText){
@@ -406,6 +435,10 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         fountainArchLength = new double[fountainBalls+1];
         fountainArchHeight = new double[fountainBalls+1];
         isFountainDone = false;
+
+        flashbangTranparency = 0;
+        isFlashbangWhite = false;
+        isFlashbangDone = false;
     }
 
     private void drawKFC() {
@@ -784,6 +817,20 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         }
     }
 
+    private void updateFlashbangTransparency() {
+        if (!isFlashbangWhite) {            
+            transition += 0.004;
+            flashbangTranparency = (int)transition;
+            if (flashbangTranparency >= 255) {
+                isFlashbangWhite = true;
+            }
+        }
+        else{
+            transition -= 0.0005;
+            flashbangTranparency = (int)transition;
+        }
+    }
+
     private void updateStarMovement() {
         
         int minOffsetX = -10;
@@ -791,7 +838,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         int maxOffsetX = 10;
         int maxOffsetY = 10;
         
-        double movingSpeed = 0.0001;
+        double movingSpeed = 0.00001;
         
         if(starOffsetY >= maxOffsetY && starOffsetX > minOffsetX){
             starOffsetX -= movingSpeed;
@@ -810,7 +857,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
     private void updateStarColor() {
 
-        double colorChangeSpeed = 0.00001;
+        double colorChangeSpeed = 0.000001;
 
         if (starColorStatus[starLayers-1] < 1) {          
             for (int i = 0; i < starLayers; i++) {
@@ -983,7 +1030,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     private void updateRing(){
 
         int baseSize = 8;
-        double veticalSpeed = 0.0002;
+        double veticalSpeed = 0.0004;
         double spinningSpeed = 0.0001;
 
         for (int i = 0; i < ringLayers; i++) {
@@ -1115,13 +1162,15 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(!isWaiting){
             drawEffect();
         }
-        g2.drawImage(EffectBuffer, 0, 0, this);
+        g2.drawImage(effectBuffer, 0, 0, this);
 
         if(isText){
             drawTextbox();
             drawText();
         }
         g2.drawImage(textBoxBuffer, 0, 0, this);
+
+        effectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     }
 
     private void whitenChicken() {
@@ -1133,27 +1182,27 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         // System.out.println(red);
         // System.out.println(green);
         // System.out.println(blue);
-        if(red < 248 && green < 248 && blue < 248){
-            Color color = new Color(255,255,255, (int) whitenOpacity);
-            floodFill(g, 331, 177, color, babyBuffer);
-            floodFill(g, 309, 220, color, babyBuffer);
-            floodFill(g, 271, 248, color, babyBuffer);
+        // if(red < 248 && green < 248 && blue < 248){
+        //     Color color = new Color(255,255,255, (int) whitenOpacity);
+        //     floodFill(g, 331, 177, color, babyBuffer);
+        //     floodFill(g, 309, 220, color, babyBuffer);
+        //     floodFill(g, 271, 248, color, babyBuffer);
     
-            floodFill(g, 294, 325, color, babyBuffer);
-            floodFill(g, 306, 318, color, babyBuffer);
-            floodFill(g, 312, 317, color, babyBuffer);
-            floodFill(g, 321, 316, color, babyBuffer);
+        //     floodFill(g, 294, 325, color, babyBuffer);
+        //     floodFill(g, 306, 318, color, babyBuffer);
+        //     floodFill(g, 312, 317, color, babyBuffer);
+        //     floodFill(g, 321, 316, color, babyBuffer);
             
-            floodFill(g, 304, 250, color, babyBuffer);
-            floodFill(g, 255, 241, color, babyBuffer);
+        //     floodFill(g, 304, 250, color, babyBuffer);
+        //     floodFill(g, 255, 241, color, babyBuffer);
     
-            floodFill(g, 273, 277, color, babyBuffer);
-            floodFill(g, 322, 284, color, babyBuffer);
-            floodFill(g, 309, 237, color, babyBuffer);
-            floodFill(g, 323, 293, color, babyBuffer);
-            floodFill(g, 307, 203, color, babyBuffer);
-            floodFill(g, 299, 338, color, babyBuffer);
-        }
+        //     floodFill(g, 273, 277, color, babyBuffer);
+        //     floodFill(g, 322, 284, color, babyBuffer);
+        //     floodFill(g, 309, 237, color, babyBuffer);
+        //     floodFill(g, 323, 293, color, babyBuffer);
+        //     floodFill(g, 307, 203, color, babyBuffer);
+        //     floodFill(g, 299, 338, color, babyBuffer);
+        // }
     }
 
     //paint entire image on buffer
@@ -1283,7 +1332,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     private void drawEffect() {
-        Graphics2D g = EffectBuffer.createGraphics();
+        Graphics2D g = effectBuffer.createGraphics();
         if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY && spiralPositionY[0][spiralBalls] < spiralMidpointY){
             drawSpiral(g);
         }
@@ -1293,7 +1342,11 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius && isDomeDone){
             drawRing(g);
         }
-        if(fountainSize[fountainBalls] >= 0 &&isRingDone){
+        if(!isFlashbangDone && isRingDone){
+            g.setColor(new Color(225, 225, 225, flashbangTranparency));
+            g.fillRect(0,0,600,450);
+        }
+        if(fountainSize[fountainBalls] >= 0 && isFlashbangDone){
             drawFountain(g);
         }
         
@@ -1304,10 +1357,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         for (int i = 0; i < spiralLayers; i++) {   
             for (int j = 0; j < spiralBalls; j++) {
                 if (spiralPositionY[i][spiralBalls] < spiralMidpointY && spiralPositionY[i][spiralBalls] >= spiralEndpointY){
-                    drawCircle(g, (int)spiralPositionX[i][j], (int)spiralPositionY[i][j], (int)spiralSize[i][j]);
-                    if ((int)spiralSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)spiralPositionX[i][j], (int)spiralPositionY[i][j], new Color[]{new Color(255,0,0)}, new Color(255,255,255), mainBuffer);
-                    }
+                    g.fillOval((int)spiralPositionX[i][j] - (int)spiralSize[i][j], (int)spiralPositionY[i][j] - (int)spiralSize[i][j], (int)spiralSize[i][j]*2, (int)spiralSize[i][j]*2);
                 }
             }
         }
@@ -1318,10 +1368,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         for (int i = 0; i < domeLayers; i++) {   
             for (int j = 0; j < domeBalls; j++) {
                 if (domePositionY[i][j] > domeMidpointY && domePositionY[i][domeBalls] <= domeEndpointY){
-                    drawCircle(g, (int)domePositionX[i][j], (int)domePositionY[i][j], (int)domeSize[i][j]);
-                    if ((int)domeSize[i][j] > 1) {   
-                        floodFillBorder(g, (int)domePositionX[i][j], (int)domePositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
-                    }
+                    g.fillOval((int)domePositionX[i][j] - (int)domeSize[i][j], (int)domePositionY[i][j] - (int)domeSize[i][j], (int)domeSize[i][j]*2, (int)domeSize[i][j]*2);
                 }
             }
         }
@@ -1332,10 +1379,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         for (int i = 0; i < ringLayers; i++) {   
             for (int j = 0; j < ringBalls; j++) {
                 if (ringPositionY[i][ringBalls] < ringMidpointY - ringFinalRadius){
-                    drawCircle(g, (int)ringPositionX[i][j], (int)ringPositionY[i][j], (int)ringSize[i][j]);
-                    if ((int)ringSize[i][j] > 1 && (int)ringPositionX[i][j] > 0 && (int)ringPositionX[i][j] < 600 && (int)ringPositionY[i][j] > 0 && (int)ringPositionY[i][j] < 600) {   
-                        floodFillBorder(g, (int)ringPositionX[i][j], (int)ringPositionY[i][j], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
-                    }
+                    g.fillOval((int)ringPositionX[i][j] - (int)ringSize[i][j], (int)ringPositionY[i][j] - (int)ringSize[i][j], (int)ringSize[i][j]*2, (int)ringSize[i][j]*2);
                 }
             }
         }
@@ -1345,10 +1389,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < fountainBalls; i++) {   
             if (fountainPositionY[i] < fountainMidpointY){
-                drawCircle(g, (int)fountainPositionX[i], (int)fountainPositionY[i], (int)fountainSize[i]);
-                if ((int)fountainSize[i] > 1) {   
-                    floodFillBorder(g, (int)fountainPositionX[i], (int)fountainPositionY[i], new Color[]{new Color (255,255,255)}, new Color(255,255,255), mainBuffer);
-                }
+                g.fillOval((int)fountainPositionX[i] - (int)fountainSize[i], (int)fountainPositionY[i] - (int)fountainSize[i], (int)fountainSize[i]*2, (int)fountainSize[i]*2);
             }
         }
     }
