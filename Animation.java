@@ -3,7 +3,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -19,31 +18,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Animation extends JPanel implements Runnable,MouseListener{
+    //Buffers
+    BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 
     public Animation(){
         addMouseListener(this);
     }
 
-    //Main variable
-    static Font font;
-    private BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
-    private Stage currentStage = Stage.Show;
-    private boolean isDraw = false;
-    private boolean isText = true;
-    private boolean isKFC = false;
-    private double whitenOpacity = 20;
-
     public static void main(String[] args) {
-        try {
-            font = Font.createFont(Font.TRUETYPE_FONT, new File("pokemon-emerald.ttf")).deriveFont(50f);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("pokemon-emerald.ttf")));
-        } catch (Exception e) {
-            System.err.println("NO FONT");
-        }
-
         Animation m = new Animation();
         JFrame f = new JFrame();
         f.add(m);
@@ -53,6 +38,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         f.pack();
         f.setVisible(true);
         f.setLocationRelativeTo(null);
+        f.setResizable(false);
         (new Thread(m)).start();
     }
 
@@ -62,99 +48,100 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     // =============================================================================
     // =============================================================================
 
-    double letter1 = 0;
-    double letter2 = 0;
-    double letter3 = 0;
-    double letter4 = 0;
-    String line1Text = "What?";
-    String line2Text = "BABY CHICK is evolving!";
-    String line3Text = "Congratulations! BABY CHICK";
-    String line4Text = "evolved into CHUD-JUJAI!";
+    Font font;
+    Stage currentStage;
+    boolean isDraw;
+    boolean isText;
+    boolean isKFC;
+    double whitenOpacity;
+
+    double lineCnt[] = new double[4];
+    final String lineText[] = new String[4];
 
     //------------------------------------------------------------------------------
-    //                                Background
+    //                                 Background
     //------------------------------------------------------------------------------
     
-    double tranparency = 0;
-    double transition = 0;
+    double tranparency;
+    double transition;
 
-    int starLayers = 10;
-    int starPoints = 8;
-    int starMidpointX = 300;
-    int starMidpointY = 225;
-    int starColorSwitch = 6;
-    double starOffsetX = 0;
-    double starOffsetY = 10;
-    boolean isStarStart = false;
-    double[] starColorStatus = new double[starLayers];
-    double[][] starPositionX = new double[starLayers][starPoints*2];
-    double[][] starPositionY = new double[starLayers][starPoints*2];
+    int starLayers;
+    int starPoints;
+    int starMidpointX;
+    int starMidpointY;
+    int starColorSwitch;
+    double starOffsetX;
+    double starOffsetY;
+    boolean isStarStart;
+    double[] starColorStatus;
+    double[][] starPositionX;
+    double[][] starPositionY;
 
     //------------------------------------------------------------------------------
     //                                 Effects
     //------------------------------------------------------------------------------
 
-    boolean isWaiting = false;
+    boolean isWaiting;
 
-    int spiralLayers = 10;
-    int spiralBalls = 4;
-    int spiralMidpointX = 300;
-    int spiralMidpointY = 360;
-    int spiralEndpointY = 0;
-    boolean isSpiralDone = false;
-    char[][] spiralDirection = new char[spiralLayers][spiralBalls];
-    double[][] spiralSize = new double[spiralLayers][spiralBalls];
-    double[][] spiralPositionX = new double[spiralLayers][spiralBalls];
-    double[][] spiralPositionY = new double[spiralLayers][spiralBalls+1];
+    int spiralLayers;
+    int spiralBalls;
+    int spiralMidpointX;
+    int spiralMidpointY;
+    int spiralEndpointY;
+    double[][] spiralSize;
+    double[][] spiralPositionX;
+    double[][] spiralPositionY;
+    char[][] spiralDirection;
+    boolean isSpiralDone;
 
-    int domeLayers = 6;
-    int domeBalls = 8;
-    int domeMidpointX = 300;
-    int domeMidpointY = 20;
-    int domeEndpointY = 360;
-    boolean isDomeDone = false;
-    double[][] domeSize = new double[domeLayers][domeBalls];
-    double[][] domePositionX = new double[domeLayers][domeBalls];
-    double[][] domePositionY = new double[domeLayers][domeBalls+1];
+    int domeLayers;
+    int domeBalls;
+    int domeMidpointX;
+    int domeMidpointY;
+    int domeEndpointY;
+    double[][] domeSize;
+    double[][] domePositionX;
+    double[][] domePositionY;
+    boolean isDomeDone;
 
-    int ringLayers = 2;
-    int ringBalls = 16;
-    int ringMidpointX = 300;
-    int ringMidpointY = 225;
-    int ringBaseRadius = 400;
-    int ringFinalRadius = 25;
-    boolean isRingDone = false;
-    double[][] ringSize = new double[ringLayers][ringBalls];
-    double[][] ringPositionX = new double[ringLayers][ringBalls];
-    double[][] ringPositionY = new double[ringLayers][ringBalls+1];
-    double[][] ringAngle = new double[ringLayers][ringBalls];
+    int ringLayers;
+    int ringBalls;
+    int ringMidpointX;
+    int ringMidpointY;
+    int ringBaseRadius;
+    int ringFinalRadius;
+    double[][] ringSize;
+    double[][] ringPositionX;
+    double[][] ringPositionY;
+    double[][] ringAngle;
+    boolean isRingDone;
 
-    int fountainBalls = 30;
-    int fountainBallsMinSize = 8;
-    int fountainBallsMaxSize = 12;
-    int fountainMidpointX = 300;
-    int fountainMidpointY = 360;
-    boolean isFountainDone = false;
-    char[] fountainDirection = new char[fountainBalls+1];
-    double[] fountainSize = new double[fountainBalls+1];
-    double[] fountainPositionX = new double[fountainBalls+1];
-    double[] fountainPositionY = new double[fountainBalls+1];
-    double[] fountainArchLength = new double[fountainBalls+1];
-    double[] fountainArchHeight = new double[fountainBalls+1];
+    int fountainBalls;
+    int fountainBallsMinSize;
+    int fountainBallsMaxSize;
+    int fountainMidpointX;
+    int fountainMidpointY;
+    boolean isFountainDone;
+    char[] fountainDirection;
+    double[] fountainSize;
+    double[] fountainPositionX;
+    double[] fountainPositionY;
+    double[] fountainArchLength;
+    double[] fountainArchHeight;
 
     //------------------------------------------------------------------------------
     //                                Chicken
     //------------------------------------------------------------------------------
 
-    double chickenMove = 0;
-    double chickenVelocity = -100;
-    double chickenScale = 1;
-    double chickenScaleVelocity = 2;
-    double chickenScaleAccelerate = 0.7;
-    double KFCScale = 0;
-    double KFCScaleVelocity = 2;
-    double KFCScaleAccelerate = 0.7;
-    double timer = 0;
+    double chickenMove;
+    double chickenVelocity;
+    double chickenScale;
+    double chickenScaleVelocity;
+    double chickenScaleAccelerate;
+    double KFCScale;
+    double KFCScaleVelocity;
+    double KFCScaleAccelerate;
+    double timer;
 
     // =============================================================================
     // =============================================================================
@@ -162,13 +149,14 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     // =============================================================================
     // =============================================================================
 
-    //start animation
-    @Override
     public void run() {
         double lastTime = System.currentTimeMillis();
         double currentTime, elapsedTime, startTime;
-        double letterVelocity = 10;
+        double letterVelocity = 12;
+        startTime = lastTime;
 
+        initializeAnimationVar();
+        
         initializeStar();
 
         initializeSpiral();
@@ -179,9 +167,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         drawBabyBuffer();
         drawWhiteKFC(false);
         
-        startTime = lastTime;
         while (true) {
-
             currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - lastTime;
             lastTime = currentTime;
@@ -198,8 +184,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             //0 - 3 second
             if(timer <= 3){
                 //do nothing
-            }//3-6
+            }
             else if(timer <= 6){
+                //Jumping Chick
                 currentStage = Stage.Show;
                 chickenMove += chickenVelocity * elapsedTime / 1000.0;
                 if(chickenMove >= 0){
@@ -210,16 +197,18 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     chickenMove = -30;
                     chickenVelocity = -chickenVelocity;
                 }
-            }//0 - 3.416 second
-            else if(timer <= 6 + 5/letterVelocity){
+            }
+            else if(lineCnt[0] < lineText[0].length()){
+                //Display Message line 1
                 isText = true;
                 currentStage = Stage.Text;
-                letter1 += letterVelocity * elapsedTime / 1000.0;
-            }//3.416 - 5.5 second
-            else if(timer <= 6 + 28/letterVelocity){
+                lineCnt[0] += letterVelocity * elapsedTime / 1000.0;
+            }
+            else if(lineCnt[1] < lineText[1].length()){
+                //Display Message line 2
                 isText = true;
                 currentStage = Stage.Text;
-                letter2 += letterVelocity * elapsedTime / 1000.0;
+                lineCnt[1] += letterVelocity * elapsedTime / 1000.0;
             }//5.5 - 6.5 second
             else if(timer <= 9.5 && tranparency < 255){//dark screen transition at the 4th second
                 isText = true;
@@ -240,7 +229,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-            else if(timer <= 15.5 && timer * 1000 % 1 == 0 || !isDomeDone){
+            else if(timer <= 15.5 && timer * 1000 % 1 == 0 || !isDomeDone){ //Moving each balls in the layer of the spiral and Make chicken white
                 isText = true;
                 currentStage = Stage.Evolve;
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
@@ -278,6 +267,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }
             else if(timer <= 25 || chickenScale > 0.1){
+                //Scaling Chicken and KFC Bucket inversely
                 currentStage = Stage.Evolve;
                 chickenScale += chickenScaleVelocity * elapsedTime / 1000.0;
                 chickenScaleVelocity += chickenScaleAccelerate * elapsedTime / 1000.0;
@@ -305,26 +295,121 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                     KFCScaleAccelerate = -KFCScaleAccelerate;
                 }
             }
-            else if(timer <= 40 + 27/letterVelocity){
+            else if(lineCnt[2] < lineText[2].length()){
+                //draw KFC Bucket with coloring
                 if(!isText){
                     isKFC = true;
                 }
                 if(isKFC){
                     drawWhiteKFC(true);
                 }
+                //Display Message line 3
                 isText = true;
                 currentStage = Stage.Text;
-                letter3 += letterVelocity * elapsedTime / 1000.0;
+                lineCnt[2] += letterVelocity * elapsedTime / 1000.0;
             }
-            else if(timer <= 40 + 51/letterVelocity){
+            else if(lineCnt[3] < lineText[3].length()){
+                //Display Message line 4
                 isText = true;
                 currentStage = Stage.Text;
-                letter4 += letterVelocity * elapsedTime / 1000.0;
+                lineCnt[3] += letterVelocity * elapsedTime / 1000.0;
             }
         
             //Display
             repaint();
         }
+    }
+
+    private void initializeAnimationVar() {
+        font = new Font("Segoe UI", Font.PLAIN, 36);
+
+        currentStage = Stage.Show;
+        isDraw = false;
+        isText = true;
+        isKFC = false;
+        whitenOpacity = 20;
+
+        lineCnt[0] = 0;
+        lineCnt[1] = 0;
+        lineCnt[2] = 0;
+        lineCnt[3] = 0;
+        lineText[0] = "What?";
+        lineText[1] = "BABY CHICK is evolving!";
+        lineText[2] = "Congratulations! BABY CHICK";
+        lineText[3] = "evolved into CHUD-JUJAI!";
+
+        chickenMove = 0;
+        chickenVelocity = -100;
+        chickenScale = 1;
+        chickenScaleVelocity = 2;
+        chickenScaleAccelerate = 0.7;
+        KFCScale = 0;
+        KFCScaleVelocity = 2;
+        KFCScaleAccelerate = 0.7;
+        timer = 0;
+
+        tranparency = 0;
+        transition = 0;
+
+        starLayers = 10;
+        starPoints = 8;
+        starMidpointX = 300;
+        starMidpointY = 225;
+        starColorSwitch = 6;
+        starOffsetX = 0;
+        starOffsetY = 10;
+        starColorStatus = new double[starLayers];
+        starPositionX = new double[starLayers][starPoints*2];
+        starPositionY = new double[starLayers][starPoints*2];
+        isStarStart = false;
+
+        isWaiting = false;
+    
+        spiralLayers = 10;
+        spiralBalls = 4;
+        spiralMidpointX = 300;
+        spiralMidpointY = 360;
+        spiralEndpointY = 0;
+        spiralSize = new double[spiralLayers][spiralBalls];
+        spiralPositionX = new double[spiralLayers][spiralBalls];
+        spiralPositionY = new double[spiralLayers][spiralBalls+1];
+        spiralDirection = new char[spiralLayers][spiralBalls];
+        isSpiralDone = false;
+
+        domeLayers = 6;
+        domeBalls = 8;
+        domeMidpointX = 300;
+        domeMidpointY = 50;
+        domeEndpointY = 360;
+        domeSize = new double[domeLayers][domeBalls];
+        domePositionX = new double[domeLayers][domeBalls];
+        domePositionY = new double[domeLayers][domeBalls+1];
+        isDomeDone = false;
+
+        ringLayers = 2;
+        ringBalls = 16;
+        ringMidpointX = 300;
+        ringMidpointY = 225;
+        ringBaseRadius = 400;
+        ringFinalRadius = 25;
+        ringSize = new double[ringLayers][ringBalls];
+        ringPositionX = new double[ringLayers][ringBalls];
+        ringPositionY = new double[ringLayers][ringBalls+1];
+        ringAngle = new double[ringLayers][ringBalls];
+        isRingDone = false;
+    
+        fountainBalls = 30;
+        fountainBallsMinSize = 8;
+        fountainBallsMaxSize = 12;
+        fountainMidpointX = 300;
+        fountainMidpointY = 360;
+        fountainDirection = new char[fountainBalls+1];
+        fountainSize = new double[fountainBalls+1];
+        fountainPositionX = new double[fountainBalls+1];
+        fountainPositionY = new double[fountainBalls+1];
+        fountainArchLength = new double[fountainBalls+1];
+        fountainArchHeight = new double[fountainBalls+1];
+        isFountainDone = false;
     }
 
     private void drawKFC() {
@@ -424,7 +509,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         
         g.setColor(new Color(255,255,255,1));
         g.fillRect(0, 0, 600, 600);
-        // g.setColor(Color.WHITE);
         if(isBlack){
             g.setColor(Color.black);
         }
@@ -1030,6 +1114,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
 
         g2.drawImage(KFCBuffer, 0, 0, this);
 
+        g2.setTransform(originalTransform);
+        
+        if(isText){
+            drawTextbox();
+            drawText();
+        }
+        g2.drawImage(textBoxBuffer, 0, 0, this);
     }
 
     private void whitenChicken() {
@@ -1077,12 +1168,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(!isWaiting){
             drawEffect(g);
         }
-        if(isText){
-            drawTextbox(g);
-            drawText(g);
-        }
-        // if(currentStage == Stage.KFC)
-        //     drawKFC(g);
     }
 
     private void drawBackground(Graphics2D g) {
@@ -1151,7 +1236,8 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     }
 
     //draw text box on bottom part of screen
-    private void drawTextbox(Graphics2D g) {
+    private void drawTextbox() {
+        Graphics2D g = textBoxBuffer.createGraphics();
         g.setColor(new Color(62,57,70));
         g.fillRect(0, 450, 600, 150);
 
@@ -1162,25 +1248,26 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.fillRoundRect(20, 460, 560, 130, 10, 10);
     }
 
-    private void drawText(Graphics2D g) {
+    private void drawText() {
+        Graphics2D g = textBoxBuffer.createGraphics();
         String text1 = "";
         String text2 = "";
-        if(letter2 >= line2Text.length()){
-            for (int i = 0; i < letter3 && i < line3Text.length(); i++) 
-                text1 += line3Text.charAt(i);
-            for (int i = 0; i < letter4 && i < line4Text.length(); i++){
-                if(line4Text.charAt(i) == ' ')
-                    text2 += line4Text.charAt(i);
-                text2 += line4Text.charAt(i);
+        if(lineCnt[1] > lineText[1].length()){
+            for (int i = 0; i < lineCnt[2] && i < lineText[2].length(); i++) 
+                text1 += lineText[2].charAt(i);
+            for (int i = 0; i < lineCnt[3] && i < lineText[3].length(); i++){
+                if(lineText[3].charAt(i) == ' ')
+                    text2 += lineText[3].charAt(i);
+                text2 += lineText[3].charAt(i);
             }
         }
         else{
-            for (int i = 0; i < letter1 && i < line1Text.length(); i++) 
-                text1 += line1Text.charAt(i);
-            for (int i = 0; i < letter2 && i < line2Text.length(); i++){
-                if(line2Text.charAt(i) == ' ')
-                    text2 += line2Text.charAt(i);
-                text2 += line2Text.charAt(i);
+            for (int i = 0; i < lineCnt[0] && i < lineText[0].length(); i++) 
+                text1 += lineText[0].charAt(i);
+            for (int i = 0; i < lineCnt[1] && i < lineText[1].length(); i++){
+                if(lineText[1].charAt(i) == ' ')
+                    text2 += lineText[1].charAt(i);
+                text2 += lineText[1].charAt(i);
             }
         }
         
