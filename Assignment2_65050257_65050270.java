@@ -13,7 +13,7 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class Animation extends JPanel implements Runnable{
+public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
     //Buffers
     BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage effectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
@@ -22,7 +22,7 @@ public class Animation extends JPanel implements Runnable{
     BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 
     public static void main(String[] args) {
-        Animation m = new Animation();
+        Assignment2_65050257_65050270 m = new Assignment2_65050257_65050270();
         JFrame f = new JFrame();
         f.add(m);
         f.setTitle("Animation");
@@ -788,16 +788,16 @@ public class Animation extends JPanel implements Runnable{
 
         drawCurve(g, 320, 328, 315, 326, 317, 319, 322, 319);
         drawCurve(g, 320, 328, 327, 327, 328, 322, 322, 319);
-        
+        Color chickenColor = new Color(253,183,97);
         floodFill(g, 255, 257, Color.RED, KFCBuffer);
         floodFill(g, 357, 268, Color.RED, KFCBuffer);
-        floodFill(g, 269, 224, Color.ORANGE, KFCBuffer);
-        floodFill(g, 288, 198, Color.ORANGE, KFCBuffer);
-        floodFill(g, 331, 211, Color.ORANGE, KFCBuffer);
-        floodFill(g, 335, 193, Color.ORANGE, KFCBuffer);
-        floodFill(g, 309, 227, Color.ORANGE, KFCBuffer);
-        floodFill(g, 329, 232, Color.ORANGE, KFCBuffer);
-        floodFill(g, 306, 215, Color.ORANGE, KFCBuffer);
+        floodFill(g, 269, 224, chickenColor, KFCBuffer);
+        floodFill(g, 288, 198, chickenColor, KFCBuffer);
+        floodFill(g, 331, 211, chickenColor, KFCBuffer);
+        floodFill(g, 335, 193, chickenColor, KFCBuffer);
+        floodFill(g, 309, 227, chickenColor, KFCBuffer);
+        floodFill(g, 329, 232, chickenColor, KFCBuffer);
+        floodFill(g, 306, 215, chickenColor, KFCBuffer);
         isKFC = false;
     }
     
@@ -1213,9 +1213,6 @@ public class Animation extends JPanel implements Runnable{
         int red = currentColor.getRed();
         int green = currentColor.getGreen();
         int blue = currentColor.getBlue();
-        // System.out.println(red);
-        // System.out.println(green);
-        // System.out.println(blue);
         if(red < 248 && green < 248 && blue < 248){
             Color color = new Color(255,255,255, 255-(int)whitenOpacity*10);
             floodFill(g, 331, 177, color, babyBuffer);
@@ -1461,6 +1458,7 @@ public class Animation extends JPanel implements Runnable{
     //=============================================================================================================
     //=============================================================================================================
 
+    //floodfill without specifying seed point color
     private void floodFill(Graphics g, int x, int y, Color fillColor, BufferedImage buffer) {
         int targetRGB = buffer.getRGB(x, y);
         if (buffer.getRGB(x, y) == targetRGB) {
