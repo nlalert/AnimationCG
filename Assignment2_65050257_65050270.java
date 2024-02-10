@@ -1078,7 +1078,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
 
             double archHeight = fountainArchHeight[i];
             double archLength = Math.abs(fountainArchLength[i]);
-            double archFloor = 300;
+            double archFloor = 360;
 
             double archMidpointX = fountainArchLength[i] + fountainMidpointX;
             double archMidpointY = fountainMidpointY;
