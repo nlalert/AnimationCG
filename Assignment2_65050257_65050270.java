@@ -42,6 +42,10 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
     // =============================================================================
     // =============================================================================
 
+    double lastTime;
+    double currentTime, elapsedTime, startTime;
+    double letterVelocity;
+    
     Font font;
     Stage currentStage;
     boolean isDraw;
@@ -51,7 +55,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
     double whitenOpacity;
     
     double lineCnt[] = new double[4];
-    final String lineText[] = new String[4];
+    String lineText[] = new String[4];
     
     //------------------------------------------------------------------------------
     //                                 Background
@@ -151,11 +155,6 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
 
     //running animation thread
     public void run() {
-        double lastTime = System.currentTimeMillis();
-        double currentTime, elapsedTime, startTime;
-        double letterVelocity = 12;
-        startTime = lastTime;
-
         initializeAnimationVar();
         
         initializeStar();
@@ -168,17 +167,23 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
         drawKFC(true);
         
         while (true) {
+            //Calculate animation
+            updateAnimation();
+            //Display
+            repaint();
+        }
+    }
+
+    private void updateAnimation() {
             currentTime = System.currentTimeMillis();
             elapsedTime = currentTime - lastTime;
             lastTime = currentTime;
-            
             timer = (currentTime-startTime)/1000.0;   //timer since start running the animation in Second Unit
-            
             //0 - 3 second
             if(timer <= 3){
                 //do nothing
             }
-
+            //make baby chick jump for 3 second
             else if(timer <= 6 || chickenMove > 0.01){
                 //Jumping Chick
                 currentStage = Stage.Show;
@@ -192,28 +197,26 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                     chickenVelocity = -chickenVelocity;
                 }
             }
-
+            //display message first line until finish
             else if(lineCnt[0] < lineText[0].length()){
                 //Display Message line 1
                 isText = true;
                 currentStage = Stage.Text;
                 lineCnt[0] += letterVelocity * elapsedTime / 1000.0;
             }
-
+            //display message second line until finish
             else if(lineCnt[1] < lineText[1].length()){
                 //Display Message line 2
                 isText = true;
                 currentStage = Stage.Text;
                 lineCnt[1] += letterVelocity * elapsedTime / 1000.0;
             }
-
             //dark screen transition
             else if(!isBlack){
                 isText = false;
                 currentStage = Stage.Evolve;
                 updateTransparencyToBlack();
             }
-
             //Moving each balls in the layer of the spiral , start Making chicken white , start Moving and changing color of background stars
             else if(!isSpiralDone){ 
                 isStarStart = true;
@@ -233,7 +236,6 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                 //Make chicken white
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-
             //Moving each balls in the layer of the dome and Make chicken white
             else if(!isDomeDone){
                 currentStage = Stage.Evolve;
@@ -252,7 +254,6 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                 //Make chicken white
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
-
             //Scaling Chicken and KFC Bucket inversely
             else if(!isStarDone || chickenScale > 0.1){
                 //Scaling Chicken and KFC Bucket inversely
@@ -265,6 +266,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                     updateStarColor();
                 }
             }
+            //moving ring effect
             else if(!isRingDone){
                 currentStage = Stage.Evolve;
                 if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
@@ -278,6 +280,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                     updateStarColor();
                 }
             }
+            //flashbang flash and disappear
             else if(!isFlashbangDone){
                 //draw KFC Bucket with coloring
                 currentStage = Stage.Evolve;
@@ -290,6 +293,7 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                     drawKFC(false);
                 }
             }
+            //fountain appear
             else if(!isFountainDone){
                 currentStage = Stage.Evolve;
                 if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
@@ -302,7 +306,8 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
             else if(!isClear){//dark screen transition at the 4th second
                 currentStage = Stage.Evolve;
                 updateTransparencyToClear();
-            }//6.5 - 99999999 second  
+            }
+            //display message first line until finish
             else if(lineCnt[2] < lineText[2].length()){
                 //Display Message line 3
                 isText = false;
@@ -310,20 +315,21 @@ public class Assignment2_65050257_65050270 extends JPanel implements Runnable{
                 currentStage = Stage.Text;
                 lineCnt[2] += letterVelocity * elapsedTime / 1000.0;
             }
+            //display message second line until finish
             else if(lineCnt[3] < lineText[3].length()){
                 //Display Message line 4
                 currentStage = Stage.Text;
                 lineCnt[3] += letterVelocity * elapsedTime / 1000.0;
             }
-        
-            //Display
-            repaint();
-        }
     }
 
     //initialize value of global variable for animation
     private void initializeAnimationVar() {
         font = new Font("Segoe UI", Font.PLAIN, 36);
+
+        lastTime = System.currentTimeMillis();
+        letterVelocity = 12;
+        startTime = lastTime;
 
         currentStage = Stage.Show;
         isDraw = false;
