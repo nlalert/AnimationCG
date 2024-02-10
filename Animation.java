@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -20,6 +19,7 @@ import javax.swing.JPanel;
 public class Animation extends JPanel implements Runnable,MouseListener{
     //Buffers
     BufferedImage mainBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage EffectBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage textBoxBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage babyBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
     BufferedImage KFCBuffer = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
@@ -217,7 +217,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             }//6.5 - 99999999 second
             else if(timer <= 12.5 && timer * 1000 % 1 == 0 || !isSpiralDone){
                 isStarStart = true;
-                isText = true;
+                isText = false;
                 currentStage = Stage.Evolve;
                 if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY){ //Moving each balls in the layer of the spiral
                     isWaiting = false;
@@ -230,7 +230,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
             else if(timer <= 15.5 && timer * 1000 % 1 == 0 || !isDomeDone){ //Moving each balls in the layer of the spiral and Make chicken white
-                isText = true;
+                isText = false;
                 currentStage = Stage.Evolve;
                 if (domePositionY[domeLayers-1][domeBalls] <= domeEndpointY){ //Moving each balls in the layer of the dome
                     isWaiting = false;
@@ -243,7 +243,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 whitenOpacity += 100 * elapsedTime / 1000.0;
             }
             else if(timer <= 18.5 && timer * 1000 % 1 == 0 || !isRingDone){
-                isText = true;
+                isText = false;
                 currentStage = Stage.Evolve;
                 if (ringPositionY[ringLayers-1][ringBalls] <= ringMidpointY - ringFinalRadius){ //Moving each balls in the layer of the ring
                     isWaiting = false;
@@ -255,7 +255,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 }
             }
             else if(timer <= 21.5 && timer * 1000 % 1 == 0 || !isFountainDone){
-                isText = true;
+                isText = false;
                 currentStage = Stage.Evolve;
                 if (fountainSize[fountainBalls] > 0){ //Moving each balls in the layer of the ring
                     isWaiting = false;
@@ -1115,7 +1115,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g2.drawImage(KFCBuffer, 0, 0, this);
 
         g2.setTransform(originalTransform);
-        
+
+        if(!isWaiting){
+            drawEffect();
+        }
+        g2.drawImage(EffectBuffer, 0, 0, this);
+
         if(isText){
             drawTextbox();
             drawText();
@@ -1164,9 +1169,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             fadeToBlack(g);
         if (isStarStart == true && starColorSwitch > 0){
             drawStar(g);
-        }
-        if(!isWaiting){
-            drawEffect(g);
         }
     }
 
@@ -1283,8 +1285,9 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         g.drawString(text1, 35, 510);
         g.drawString(text2, 35, 560);
     }
-    
-    private void drawEffect(Graphics2D g) {    
+
+    private void drawEffect() {
+        Graphics2D g = EffectBuffer.createGraphics();
         if(spiralPositionY[spiralLayers-1][spiralBalls] >= spiralEndpointY && spiralPositionY[0][spiralBalls] < spiralMidpointY){
             drawSpiral(g);
         }
@@ -1297,6 +1300,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         if(fountainSize[fountainBalls] >= 0 &&isRingDone){
             drawFountain(g);
         }
+        
     }
 
     private void drawSpiral(Graphics2D g) {
