@@ -51,6 +51,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     Stage currentStage;
     boolean isDraw;
     boolean isText;
+    boolean isEvolving;
     boolean isKFC;
     double whitenOpacity;
     
@@ -161,7 +162,6 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         initializeAnimationVar();
         
         initializeStar();
-
         initializeSpiral();
         initializeDome();
         initializeRing();
@@ -289,12 +289,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
                 //draw KFC Bucket with coloring
                 currentStage = Stage.Evolve;
                 updateFlashbangTransparency();
-                if(!isText && isFlashbangWhite){
+                if(isEvolving && isFlashbangWhite){
                     isKFC = true;
                 }
                 if(isKFC){
                     drawWhiteKFC(true);
-                    isText = true;
+                    isEvolving = false;
                 }
             }
             else if(!isFountainDone){
@@ -312,12 +312,13 @@ public class Animation extends JPanel implements Runnable,MouseListener{
             }//6.5 - 99999999 second  
             else if(lineCnt[2] < lineText[2].length()){
                 //Display Message line 3
+                isText = false;
+                isText = true;
                 currentStage = Stage.Text;
                 lineCnt[2] += letterVelocity * elapsedTime / 1000.0;
             }
             else if(lineCnt[3] < lineText[3].length()){
                 //Display Message line 4
-                isText = true;
                 currentStage = Stage.Text;
                 lineCnt[3] += letterVelocity * elapsedTime / 1000.0;
             }
@@ -334,6 +335,7 @@ public class Animation extends JPanel implements Runnable,MouseListener{
         isDraw = false;
         isText = true;
         isKFC = false;
+        isEvolving = true;
         whitenOpacity = 20;
 
         lineCnt[0] = 0;
@@ -1383,17 +1385,12 @@ public class Animation extends JPanel implements Runnable,MouseListener{
     private void drawFountain(Graphics2D g) {
         g.setColor(new Color(255,255,255));
         for (int i = 0; i < fountainBalls; i++) {   
-            if (fountainPositionY[i] < fountainMidpointY){
+            if ((fountainPositionY[i] < fountainMidpointY && fountainDirection[i] == 'U') || fountainDirection[i] == 'D'){
                 g.fillOval((int)fountainPositionX[i] - (int)fountainSize[i], (int)fountainPositionY[i] - (int)fountainSize[i], (int)fountainSize[i]*2, (int)fountainSize[i]*2);
             }
         }
     }
-
-    private void drawBaby(Graphics2D g) {
-        
-    }
     
-
     //=============================================================================================================
     //=============================================================================================================
 
